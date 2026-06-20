@@ -118,7 +118,7 @@ export default function LandingPage() {
               target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-medium text-base py-3 px-6 rounded-2xl transition-colors justify-center"
             >
-              <Phone size={18} /> Pedir ahora
+              <MessageCircle size={18} /> Pedir ahora
             </a>
           </div>
         </div>

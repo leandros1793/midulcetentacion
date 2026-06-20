@@ -107,10 +107,14 @@ export interface Configuracion {
   id: string;
   valor_hora_trabajo: number;      // ARS por hora
   costo_fijo_por_hora: number;     // ARS por hora (alquiler + servicios)
-  whatsapp_numero?: string;        // ej. "5493512345678" (código país + número)
-  nombre_contacto_1?: string;      // ej. "Belu"
-  whatsapp_numero_2?: string;      // segundo contacto
-  nombre_contacto_2?: string;      // ej. "Flor"
+  whatsapp_numero?: string;
+  nombre_contacto_1?: string;
+  whatsapp_numero_2?: string;
+  nombre_contacto_2?: string;
+  // ── Instagram ──────────────────────────────────────────────────────────────
+  instagram_usuario?: string;      // ej. "@midulce_tentacion7"
+  instagram_url?: string;          // ej. "https://www.instagram.com/midulce_tentacion7/"
+  instagram_destacados?: string[]; // hasta 3 URLs de posts/reels
   updated_at: string;
 }
 

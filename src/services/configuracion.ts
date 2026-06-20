@@ -11,6 +11,9 @@ const DEFAULT_CONFIG: Configuracion = {
   whatsapp_numero: '5493512476048',
   nombre_contacto_2: 'Flor',
   whatsapp_numero_2: '5493512217870',
+  instagram_usuario: '@midulce_tentacion7',
+  instagram_url: 'https://www.instagram.com/midulce_tentacion7/',
+  instagram_destacados: [],
   updated_at: new Date().toISOString(),
 };
 

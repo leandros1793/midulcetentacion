@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Clock, Star, Heart, Sparkles, Flame, Tag } from 'lucide-react';
+import { ShoppingBag, Clock, Star, Heart, Sparkles, Flame, Tag, Instagram, ExternalLink } from 'lucide-react';
 import { ingredientesService, recetasService, configuracionService, promocionesService } from '../../services';
 import { calcCostoLinea } from '../../types';
 import type { Receta, Promocion } from '../../types';
@@ -267,6 +267,85 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ── Instagram ────────────────────────────────────────────────────────── */}
+      {config.instagram_url && (
+        <section className="px-5 pb-14">
+          <div className="max-w-sm mx-auto">
+
+            {/* Card principal con gradiente IG muy suave */}
+            <div
+              className="rounded-3xl p-6 mb-5 text-center"
+              style={{ background: 'linear-gradient(135deg, rgba(240,148,51,0.08) 0%, rgba(220,39,67,0.08) 50%, rgba(188,24,136,0.08) 100%)', border: '1px solid rgba(220,39,67,0.12)' }}
+            >
+              {/* Ícono IG */}
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+                style={{ background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)' }}
+              >
+                <Instagram size={26} className="text-white" />
+              </div>
+
+              <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Seguinos en</p>
+              <h2 className="text-xl font-extrabold text-stone-800 tracking-tight mb-1">
+                {config.instagram_usuario ?? '@midulce_tentacion7'}
+              </h2>
+              <p className="text-sm text-stone-500 mb-5">
+                Dulces, flyers y novedades todos los días 🍰✨
+              </p>
+
+              <a
+                href={config.instagram_url}
+                target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-white font-bold text-sm py-3 px-7 rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-lg"
+                style={{ background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)' }}
+              >
+                <Instagram size={16} /> Seguir en Instagram
+              </a>
+            </div>
+
+            {/* Grilla de destacados */}
+            {(config.instagram_destacados ?? []).some(u => u?.trim()) && (
+              <div className="grid grid-cols-3 gap-3">
+                {[0, 1, 2].map(i => {
+                  const url = config.instagram_destacados?.[i]?.trim();
+                  if (!url) return null;
+                  return (
+                    <a
+                      key={i}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group block bg-white rounded-2xl overflow-hidden shadow-[0_4px_16px_rgb(0,0,0,0.07)] border border-stone-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgb(0,0,0,0.12)]"
+                    >
+                      {/* Imagen simulada con gradiente IG */}
+                      <div
+                        className="aspect-square flex flex-col items-center justify-center gap-1.5 relative overflow-hidden"
+                        style={{ background: 'linear-gradient(135deg, rgba(240,148,51,0.15), rgba(220,39,67,0.15), rgba(188,24,136,0.15))' }}
+                      >
+                        <div
+                          className="w-8 h-8 rounded-xl flex items-center justify-center"
+                          style={{ background: 'linear-gradient(135deg, #f09433, #dc2743, #bc1888)' }}
+                        >
+                          <Instagram size={16} className="text-white" />
+                        </div>
+                        <ExternalLink size={10} className="text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-2 right-2" />
+                      </div>
+                      {/* Label */}
+                      <div className="px-2 py-2 text-center">
+                        <p className="text-[9px] font-bold text-stone-500 uppercase tracking-wide leading-tight">
+                          Ver post
+                        </p>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+
+          </div>
+        </section>
+      )}
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
       <footer className="border-t border-stone-100/80 bg-white/60 backdrop-blur-sm py-10 px-5 text-center">

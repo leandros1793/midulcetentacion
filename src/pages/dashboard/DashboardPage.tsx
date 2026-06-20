@@ -101,9 +101,9 @@ export default function DashboardPage() {
         <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Acceso rápido</h3>
         <div className="space-y-2">
           {[
-            { label: 'Nueva receta / cálculo de costos', icon: <BookOpen size={16} />, path: '/recetas', color: 'text-violet-500', bg: 'bg-violet-50' },
-            { label: 'Agregar ingrediente',        icon: <ShoppingBasket size={16} />, path: '/ingredientes', color: 'text-emerald-500', bg: 'bg-emerald-50' },
-            { label: 'Registrar gasto',            icon: <Receipt size={16} />, path: '/gastos', color: 'text-amber-500', bg: 'bg-amber-50' },
+            { label: 'Nueva receta / cálculo de costos', icon: <BookOpen size={16} />, path: '/dashboard/recetas', color: 'text-violet-500', bg: 'bg-violet-50' },
+            { label: 'Agregar ingrediente',        icon: <ShoppingBasket size={16} />, path: '/dashboard/ingredientes', color: 'text-emerald-500', bg: 'bg-emerald-50' },
+            { label: 'Registrar gasto',            icon: <Receipt size={16} />, path: '/dashboard/gastos', color: 'text-amber-500', bg: 'bg-amber-50' },
           ].map(item => (
             <button
               key={item.path}

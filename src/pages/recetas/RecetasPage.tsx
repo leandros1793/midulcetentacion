@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Plus, BookOpen, Clock, Users, ChevronRight, Trash2 } from 'lucide-react';
 import { recetasService } from '../../services';
 import type { Receta, RecetaForm } from '../../types';

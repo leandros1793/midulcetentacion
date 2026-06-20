@@ -1,8 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as storage from './storage';
-import type { Ingrediente, IngredienteForm } from '../types';
+import type { Ingrediente, IngredienteForm, RecetaIngrediente } from '../types';
 
-const KEY = 'mdt_ingredientes';
+const KEY     = 'mdt_ingredientes';
+const KEY_RI  = 'mdt_receta_ingredientes';
 
 export const ingredientesService = {
   getAll: (): Ingrediente[] => storage.getAll<Ingrediente>(KEY),
@@ -19,5 +20,10 @@ export const ingredientesService = {
     return storage.update<Ingrediente>(KEY, { ...existing, ...form, id, updated_at: new Date().toISOString() });
   },
 
-  delete: (id: string): void => storage.remove<Ingrediente>(KEY, id),
+  delete: (id: string): void => {
+    storage.remove<Ingrediente>(KEY, id);
+    // Cascade delete: quitar este ingrediente de todas las recetas donde aparezca
+    const lineasRestantes = storage.getAll<RecetaIngrediente>(KEY_RI).filter(ri => ri.ingrediente_id !== id);
+    localStorage.setItem(KEY_RI, JSON.stringify(lineasRestantes));
+  },
 };

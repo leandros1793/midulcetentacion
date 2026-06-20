@@ -18,7 +18,9 @@ export default function AppShell() {
   const navigate  = useNavigate();
   const { signOut } = useAuth();
 
+  const EXTRA_TITLES: Record<string, string> = { '/dashboard/gastos': 'Gastos Generales' };
   const current = NAV.find(n => location.pathname.startsWith(n.to) && n.to !== '/dashboard')?.label
+    ?? EXTRA_TITLES[location.pathname]
     ?? (location.pathname === '/dashboard' ? 'Inicio' : 'Mi Dulce Tentación');
 
   const handleLogout = async () => {

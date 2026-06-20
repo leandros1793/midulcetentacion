@@ -108,7 +108,19 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
     <div className="flex flex-col min-h-full">
       {/* Sub-header */}
       <div className="px-4 py-3 flex items-center gap-3 bg-white border-b border-warm-100 sticky top-0 z-20">
-        <button onClick={onBack} className="text-gray-400 hover:text-gray-600 transition-colors">
+        <button
+          onClick={() => {
+            const hayDirty =
+              receta.nombre !== initial.nombre ||
+              receta.tiempo_prep_minutos !== initial.tiempo_prep_minutos ||
+              receta.rinde_porciones !== initial.rinde_porciones ||
+              receta.costo_packaging_fijo !== initial.costo_packaging_fijo ||
+              margen !== initial.margen_ganancia_porcentaje;
+            if (hayDirty && !window.confirm('¿Salir sin guardar los cambios?')) return;
+            onBack();
+          }}
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+        >
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">
@@ -475,7 +487,16 @@ function CostBreakdownCard({
             <TrendingUp size={13} className="text-rose-400" />
             <span className="text-xs font-semibold text-stone-600">Margen de ganancia</span>
           </div>
-          <span className="text-lg font-black text-rose-500">{margen}%</span>
+          <div className="flex items-center gap-2">
+            {margen < 100 && (
+              <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">
+                ⚠️ Bajo
+              </span>
+            )}
+            <span className={`text-lg font-black ${margen < 100 ? 'text-amber-500' : 'text-rose-500'}`}>
+              {margen}%
+            </span>
+          </div>
         </div>
 
         <input
@@ -487,6 +508,11 @@ function CostBreakdownCard({
         <div className="flex justify-between text-[10px] text-stone-300 -mt-1">
           <span>50%</span><span>150%</span><span>250%</span><span>400%</span>
         </div>
+        {margen < 100 && (
+          <p className="text-[10px] text-amber-600 bg-amber-50 rounded-lg px-2.5 py-1.5 border border-amber-100">
+            Con menos del 100% de margen puede que no estés cubriendo todos tus costos reales.
+          </p>
+        )}
 
         {/* Ganancia en $ */}
         <div className="flex items-center justify-between bg-emerald-50 rounded-xl px-3 py-2.5 border border-emerald-100">

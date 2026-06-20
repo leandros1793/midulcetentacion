@@ -19,7 +19,8 @@ export const gastosService = {
 
   getDelMes: (year: number, month: number): GastoGeneral[] =>
     storage.getAll<GastoGeneral>(KEY).filter(g => {
-      const d = new Date(g.fecha);
+      // Forzar mediodía local para evitar bugs de timezone (UTC-3 en Argentina)
+      const d = new Date(g.fecha + 'T12:00:00');
       return d.getFullYear() === year && d.getMonth() === month;
     }),
 };

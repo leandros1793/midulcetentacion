@@ -20,7 +20,7 @@ const CATEGORIA_COLORS: Record<CategoriaIngrediente, string> = {
   'Lácteos':'bg-blue-50 text-blue-600','Harinas':'bg-amber-50 text-amber-600',
   'Azúcares':'bg-pink-50 text-pink-600','Huevos':'bg-yellow-50 text-yellow-600',
   'Grasas':'bg-orange-50 text-orange-600','Frutas':'bg-emerald-50 text-emerald-600',
-  'Chocolates':'bg-brown-50 text-rose-700','Decoración':'bg-purple-50 text-purple-600',
+  'Chocolates':'bg-amber-100 text-amber-800','Decoración':'bg-purple-50 text-purple-600',
   'Esencias':'bg-teal-50 text-teal-600','Leudantes':'bg-lime-50 text-lime-600',
   'Otros':'bg-gray-50 text-gray-600',
 };
@@ -34,6 +34,14 @@ const DEFAULT_FORM: IngredienteForm = {
 
 function formatARS(n: number) {
   return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:4}).format(n);
+}
+
+/** Convierte "Gramos"→"gramo", "Mililitros"→"mililitro", "Unidad"→"unidad" */
+function singularUnit(u: string): string {
+  const map: Record<string, string> = {
+    Gramos: 'gramo', Mililitros: 'mililitro', Unidad: 'unidad',
+  };
+  return map[u] ?? u.toLowerCase();
 }
 
 export default function IngredientesPage() {
@@ -106,7 +114,7 @@ export default function IngredientesPage() {
                   {ing.proveedor && ` · ${ing.proveedor}`}
                 </p>
                 <p className="text-xs font-semibold text-rose-600 mt-0.5">
-                  {formatARS(calcCostoPorUnidadReceta(ing))} / {ing.unidad_medida_receta.slice(0,-1).toLowerCase()}
+                  {formatARS(calcCostoPorUnidadReceta(ing))} / {singularUnit(ing.unidad_medida_receta)}
                   {ing.merma_porcentaje > 0 && <span className="text-gray-400 font-normal"> (merma {ing.merma_porcentaje}%)</span>}
                 </p>
               </div>
@@ -196,7 +204,7 @@ export default function IngredientesPage() {
                 {formatARS(
                   (form.precio_compra / (form.cantidad_empaque * form.factor_conversion))
                   * (1 + form.merma_porcentaje / 100)
-                )} / {form.unidad_medida_receta.slice(0,-1).toLowerCase()}
+                )} / {singularUnit(form.unidad_medida_receta)}
               </p>
             </div>
           )}

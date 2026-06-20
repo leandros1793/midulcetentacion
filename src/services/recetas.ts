@@ -22,11 +22,9 @@ export const recetasService = {
 
   delete: (id: string): void => {
     storage.remove<Receta>(KEY_RECETAS, id);
-    // Cascade delete líneas
-    const all = storage.getAll<RecetaIngrediente>(KEY_RI);
-    storage.getAll<RecetaIngrediente>(KEY_RI); // reset read
-    all.filter(ri => ri.receta_id !== id).forEach(() => {});
-    localStorage.setItem(KEY_RI, JSON.stringify(all.filter(ri => ri.receta_id !== id)));
+    // Cascade delete: eliminar todas las líneas del escandallo de esta receta
+    const lineasRestantes = storage.getAll<RecetaIngrediente>(KEY_RI).filter(ri => ri.receta_id !== id);
+    localStorage.setItem(KEY_RI, JSON.stringify(lineasRestantes));
   },
 
   // Líneas del escandallo

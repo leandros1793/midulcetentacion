@@ -56,6 +56,8 @@ export interface Receta {
   tiempo_prep_minutos: number;
   costo_packaging_fijo: number;
   margen_ganancia_porcentaje: number;  // ej. 150 = markup del 150%
+  image_url?: string;                  // URL de imagen en Supabase Storage
+  visible_en_catalogo?: boolean;       // true = aparece en la landing pública
   notas?: string;
   created_at: string;
   updated_at: string;
@@ -91,6 +93,7 @@ export interface Configuracion {
   id: string;
   valor_hora_trabajo: number;      // ARS por hora
   costo_fijo_por_hora: number;     // ARS por hora (alquiler + servicios)
+  whatsapp_numero?: string;        // ej. "5493512345678" (código país + número)
   updated_at: string;
 }
 

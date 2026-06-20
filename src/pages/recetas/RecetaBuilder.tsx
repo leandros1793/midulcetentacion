@@ -1,10 +1,11 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useRef, type ChangeEvent } from 'react';
 import {
   ChefHat, Plus, Trash2, Save, Clock, Users,
   Package, Zap, TrendingUp, DollarSign, Calculator,
-  ArrowLeft, Info,
+  ArrowLeft, Info, ImagePlus, Loader2,
 } from 'lucide-react';
 import { ingredientesService, recetasService, configuracionService } from '../../services';
+import { uploadProductImage } from '../../services/supabase/uploadImage';
 import {
   calcCostoPorUnidadReceta, calcCostoLinea,
   type Receta, type RecetaIngrediente, type Ingrediente,
@@ -27,6 +28,9 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
   const [addingIng, setAddingIng] = useState(false);
   const [newIngId, setNewIngId] = useState('');
   const [newCantidad, setNewCantidad] = useState('');
+  const [uploadingImg, setUploadingImg] = useState(false);
+  const [imgError, setImgError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const ingredientes = useMemo(() => ingredientesService.getAll(), []);
   const config = useMemo(() => configuracionService.get(), []);
@@ -58,6 +62,25 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
       precioPorPorcion: precioVenta / Math.max(receta.rinde_porciones, 1),
     };
   }, [lineas, receta, config, margen, ingMap]);
+
+  // ── Image upload ─────────────────────────────────────────────────────────────
+  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setImgError('Solo se permiten imágenes.'); return; }
+    if (file.size > 5 * 1024 * 1024) { setImgError('La imagen no puede superar 5 MB.'); return; }
+
+    setUploadingImg(true);
+    setImgError('');
+    try {
+      const url = await uploadProductImage(file, receta.id);
+      setReceta(r => ({ ...r, image_url: url }));
+    } catch {
+      setImgError('Error al subir la imagen. Verificá la conexión y el bucket de Supabase.');
+    } finally {
+      setUploadingImg(false);
+    }
+  };
 
   // ── Handlers ────────────────────────────────────────────────────────────────
   const handleAddLinea = () => {
@@ -140,6 +163,51 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
                 />
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Imagen del producto */}
+        <div className="card">
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+            <ImagePlus size={13} /> Foto del producto
+          </h3>
+          <div className="flex items-center gap-4">
+            {/* Preview */}
+            <div className="w-20 h-20 rounded-2xl overflow-hidden bg-warm-50 border border-warm-200 flex items-center justify-center shrink-0">
+              {receta.image_url ? (
+                <img src={receta.image_url} alt={receta.nombre} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-3xl">🎂</span>
+              )}
+            </div>
+            <div className="flex-1">
+              <input
+                ref={fileInputRef}
+                type="file" accept="image/*" className="hidden"
+                onChange={handleImageChange}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingImg}
+                className="btn-secondary text-xs w-full justify-center mb-1"
+              >
+                {uploadingImg ? <><Loader2 size={13} className="animate-spin" /> Subiendo…</> : <><ImagePlus size={13} /> {receta.image_url ? 'Cambiar foto' : 'Subir foto'}</>}
+              </button>
+              <p className="text-xs text-gray-400">JPG, PNG o WebP · máx. 5 MB</p>
+              {imgError && <p className="text-xs text-red-500 mt-1">{imgError}</p>}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <input
+              type="checkbox"
+              id="visible"
+              checked={receta.visible_en_catalogo !== false}
+              onChange={e => setReceta(r => ({ ...r, visible_en_catalogo: e.target.checked }))}
+              className="accent-rose-500"
+            />
+            <label htmlFor="visible" className="text-xs text-gray-600">
+              Mostrar en el catálogo público (landing page)
+            </label>
           </div>
         </div>
 

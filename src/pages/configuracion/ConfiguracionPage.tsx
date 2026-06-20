@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Save, Info } from 'lucide-react';
+import { Settings, Save, Info, MessageCircle, ExternalLink } from 'lucide-react';
 import { configuracionService } from '../../services';
 import type { Configuracion } from '../../types';
 
@@ -15,6 +15,7 @@ export default function ConfiguracionPage() {
     configuracionService.update({
       valor_hora_trabajo: config.valor_hora_trabajo,
       costo_fijo_por_hora: config.costo_fijo_por_hora,
+      whatsapp_numero: config.whatsapp_numero,
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -58,6 +59,31 @@ export default function ConfiguracionPage() {
           <p>Sumá todos tus gastos fijos del mes (alquiler, luz, gas) y dividilo por las horas que trabajás ese mes.</p>
           <p>Ej: $60.000 de gastos ÷ 160 horas = {formatARS(375)}/hora</p>
         </div>
+
+        <div className="h-px bg-warm-100" />
+
+        <div className="flex items-center gap-2 mb-1">
+          <MessageCircle size={15} className="text-green-500" />
+          <h3 className="text-sm font-semibold text-gray-700">WhatsApp del negocio</h3>
+        </div>
+        <div>
+          <label className="label">Número de WhatsApp</label>
+          <input type="text" className="input" placeholder="ej. 5493512345678"
+            value={config.whatsapp_numero ?? ''}
+            onChange={e => setConfig(c => ({ ...c, whatsapp_numero: e.target.value }))} />
+          <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+            <Info size={10} /> Código de país + número, sin + ni espacios. Ej: 5493512345678
+          </p>
+        </div>
+        {config.whatsapp_numero && (
+          <a
+            href={`https://wa.me/${config.whatsapp_numero}`}
+            target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2 text-xs text-green-600 hover:text-green-700"
+          >
+            <ExternalLink size={11} /> Probar enlace de WhatsApp
+          </a>
+        )}
 
         <button onClick={handleSave} className={`btn-primary w-full justify-center ${saved ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}>
           <Save size={16} /> {saved ? '¡Guardado!' : 'Guardar configuración'}

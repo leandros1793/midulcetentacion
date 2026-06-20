@@ -1,6 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Clock, Star, Heart, Sparkles, Truck } from 'lucide-react';
+import { ShoppingBag, Clock, Star, Heart, Sparkles } from 'lucide-react';
+import { ingredientesService, recetasService, configuracionService } from '../../services';
+import { calcCostoLinea } from '../../types';
+import type { Receta } from '../../types';
 
 // ── WhatsApp SVG Icon ─────────────────────────────────────────────────────────
 function WhatsAppIcon({ size = 20 }: { size?: number }) {
@@ -10,12 +13,8 @@ function WhatsAppIcon({ size = 20 }: { size?: number }) {
     </svg>
   );
 }
-import { ingredientesService, recetasService, configuracionService } from '../../services';
-import { calcCostoLinea } from '../../types';
-import type { Receta } from '../../types';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
 function formatARS(n: number) {
   return new Intl.NumberFormat('es-AR', {
     style: 'currency', currency: 'ARS', maximumFractionDigits: 0,
@@ -37,7 +36,6 @@ interface ProductoConPrecio extends Receta {
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
-
 export default function LandingPage() {
   const [productos, setProductos] = useState<ProductoConPrecio[]>([]);
   const config = useMemo(() => configuracionService.get(), []);
@@ -64,120 +62,136 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-stone-50 font-sans antialiased">
+    <div className="min-h-screen bg-amber-50/30 font-sans antialiased">
 
-      {/* ── Navbar ───────────────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-40 bg-white/75 backdrop-blur-xl border-b border-stone-100 px-5 py-3 flex items-center justify-between shadow-[0_1px_12px_rgb(0,0,0,0.04)]">
-        <div className="flex items-center gap-3">
+      {/* ── Navbar flotante ──────────────────────────────────────────────────── */}
+      <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-stone-200/50 px-5 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
           <img
             src="/logo.png"
             alt="Dulce Tentación"
-            className="h-10 w-10 object-contain rounded-2xl"
+            className="h-9 w-9 object-contain rounded-xl"
             onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
-          <div>
-            <p className="text-[10px] text-rose-400 font-semibold tracking-widest uppercase leading-none">Repostería & Cotillón</p>
-            <span className="font-bold text-stone-800 text-sm tracking-tight">Dulce Tentación</span>
+          <div className="leading-none">
+            <p className="text-[9px] text-rose-400 font-bold tracking-widest uppercase">Repostería & Cotillón</p>
+            <span className="font-extrabold text-stone-800 text-sm">Dulce Tentación</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <a
             href={`https://wa.me/${whatsappNumero}`}
             target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-full transition-all duration-200 shadow-sm shadow-emerald-200"
+            className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3.5 py-2 rounded-full transition-all duration-200 shadow-sm shadow-green-200/80"
           >
-            <WhatsAppIcon size={13} /> WhatsApp
+            <WhatsAppIcon size={12} /> WhatsApp
           </a>
-          <Link to="/login" className="text-xs text-stone-400 hover:text-rose-500 transition-colors px-2 py-2">
+          <Link to="/login" className="text-xs text-stone-400 hover:text-rose-500 transition-colors px-1 py-2">
             Panel →
           </Link>
         </div>
       </nav>
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-rose-50/80 via-orange-50/40 to-stone-50 pt-12 pb-16 px-5">
-
-        {/* Círculos decorativos de fondo */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-rose-200/20 blur-3xl" />
-          <div className="absolute -bottom-16 -left-16 w-64 h-64 rounded-full bg-amber-200/20 blur-3xl" />
+      <section
+        className="relative overflow-hidden pt-10 pb-20 px-5"
+        style={{ background: 'radial-gradient(ellipse at top, rgba(254,205,211,0.35) 0%, rgba(255,237,213,0.2) 50%, rgba(255,251,235,0.1) 100%), #fffbf0' }}
+      >
+        {/* Manchas decorativas difusas */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-rose-200/25 blur-3xl" />
+          <div className="absolute top-1/3 -left-16 w-56 h-56 rounded-full bg-amber-200/25 blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-48 h-48 rounded-full bg-pink-100/30 blur-2xl" />
         </div>
 
-        <div className="relative max-w-md mx-auto text-center">
-          <img
-            src="/logo.png"
-            alt="Dulce Tentación"
-            className="w-56 h-56 object-contain mx-auto mb-6 drop-shadow-2xl"
-            onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-          />
+        <div className="relative max-w-sm mx-auto text-center">
 
-          <span className="inline-flex items-center gap-1.5 bg-rose-100/80 text-rose-500 text-xs font-semibold px-4 py-1.5 rounded-full mb-5 tracking-wide">
-            <Star size={10} fill="currentColor" /> Córdoba · Artesanal · A pedido
+          {/* Logo integrado con anillo decorativo */}
+          <div className="relative inline-block mb-6">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-rose-200/40 to-amber-100/40 blur-2xl scale-110" />
+            <img
+              src="/logo.png"
+              alt="Dulce Tentación"
+              className="relative w-52 h-52 object-contain drop-shadow-[0_20px_40px_rgba(244,63,94,0.18)]"
+              onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
+          </div>
+
+          <span className="inline-flex items-center gap-1.5 bg-rose-100 text-rose-500 text-xs font-bold px-4 py-1.5 rounded-full mb-5 tracking-wide shadow-sm shadow-rose-100">
+            <Star size={9} fill="currentColor" /> Córdoba · Artesanal · A pedido
           </span>
 
-          <h1 className="text-4xl font-black text-stone-800 tracking-tight leading-[1.1] mb-4">
+          <h1 className="text-4xl font-extrabold text-stone-800 tracking-tight leading-[1.1] mb-3">
             Endulzamos<br />
             <span className="text-rose-500">cada momento</span>
           </h1>
 
-          <p className="text-stone-500 text-base leading-relaxed mb-8 max-w-xs mx-auto">
+          <p className="text-stone-500 text-[15px] leading-relaxed mb-8 max-w-[260px] mx-auto">
             Tortas, alfajores y delicias artesanales hechas con amor y los mejores ingredientes.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
               href="#catalogo"
-              className="inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-semibold text-sm py-3.5 px-7 rounded-full transition-all duration-300 shadow-lg shadow-rose-200/70 hover:shadow-rose-300/80 hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm py-3.5 px-7 rounded-full transition-all duration-300 shadow-lg shadow-rose-300/50 hover:shadow-rose-400/60 hover:-translate-y-0.5 active:translate-y-0"
             >
-              <ShoppingBag size={16} /> Ver menú
+              <ShoppingBag size={15} /> Ver menú
             </a>
             <a
               href={`https://wa.me/${whatsappNumero}`}
               target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-50 text-stone-700 font-semibold text-sm py-3.5 px-7 rounded-full transition-all duration-300 border border-stone-200 shadow-sm hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-2 bg-white/80 hover:bg-white text-stone-700 font-bold text-sm py-3.5 px-7 rounded-full transition-all duration-300 border border-stone-200/80 shadow-sm hover:-translate-y-0.5 backdrop-blur-sm"
             >
-              <WhatsAppIcon size={16} /> Pedir ahora
+              <WhatsAppIcon size={15} /> Pedir ahora
             </a>
           </div>
         </div>
       </section>
 
       {/* ── Propuesta de valor ────────────────────────────────────────────────── */}
-      <section className="bg-white py-8 px-5 border-y border-stone-100">
-        <div className="max-w-md mx-auto grid grid-cols-3 gap-2">
+      <section className="py-10 px-5">
+        <div className="max-w-sm mx-auto grid grid-cols-3 gap-3">
           {[
             { icon: '🌿', label: 'Ingredientes naturales' },
             { icon: '✨', label: 'Diseños únicos' },
             { icon: '🛵', label: 'Entrega a domicilio' },
           ].map(({ icon, label }) => (
-            <div key={label} className="flex flex-col items-center gap-2 py-4 px-2 rounded-2xl hover:bg-stone-50 transition-colors">
-              <span className="text-3xl">{icon}</span>
-              <p className="text-xs text-stone-500 font-medium leading-tight text-center">{label}</p>
+            <div
+              key={label}
+              className="flex flex-col items-center gap-2 bg-white/70 backdrop-blur-sm py-5 px-2 rounded-2xl shadow-[0_2px_12px_rgb(0,0,0,0.04)] border border-white"
+            >
+              <span className="text-2xl">{icon}</span>
+              <p className="text-[11px] text-stone-500 font-semibold leading-tight text-center">{label}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── Catálogo ─────────────────────────────────────────────────────────── */}
-      <section id="catalogo" className="py-14 px-5">
-        <div className="max-w-md mx-auto">
+      <section id="catalogo" className="py-6 px-5 pb-16">
+        <div className="max-w-sm mx-auto">
 
-          <div className="text-center mb-10">
-            <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-600 text-xs font-semibold px-4 py-1.5 rounded-full mb-4 tracking-wide">
+          <div className="text-center mb-8">
+            <span className="inline-flex items-center gap-1.5 bg-amber-100/80 text-amber-700 text-xs font-bold px-4 py-1.5 rounded-full mb-4 tracking-wide">
               <Sparkles size={11} /> Nuestras creaciones
             </span>
-            <h2 className="text-2xl font-black text-stone-800 tracking-tight">Elaborado a pedido</h2>
-            <p className="text-sm text-stone-400 mt-1">Con ingredientes frescos y mucho amor</p>
+            <h2 className="text-2xl font-extrabold text-stone-800 tracking-tight">Elaborado a pedido</h2>
+            <p className="text-sm text-stone-400 mt-1.5">Con ingredientes frescos y mucho amor 🩷</p>
           </div>
 
           {productos.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-3xl border border-stone-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-              <span className="text-6xl mb-4 block">🎂</span>
-              <p className="text-stone-400 font-medium">El menú se está preparando…</p>
-              <p className="text-xs text-stone-300 mt-1">Pronto vas a ver nuestras delicias acá.</p>
+            /* Estado vacío elegante */
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-12 text-center">
+              <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-5">
+                <span className="text-4xl">🎂</span>
+              </div>
+              <p className="text-stone-600 font-semibold mb-1">El menú se está preparando…</p>
+              <p className="text-xs text-stone-400 leading-relaxed">
+                Muy pronto vas a poder ver<br />todas nuestras delicias acá.
+              </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4">
               {productos.map(p => (
                 <ProductCard key={p.id} producto={p} whatsappNumero={whatsappNumero} />
               ))}
@@ -186,30 +200,31 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CTA Contacto ─────────────────────────────────────────────────────── */}
+      {/* ── Contacto ─────────────────────────────────────────────────────────── */}
       <section className="px-5 pb-16">
-        <div className="max-w-md mx-auto bg-stone-800 rounded-3xl p-8 text-center shadow-[0_20px_60px_rgb(0,0,0,0.12)]">
-          <span className="text-4xl mb-5 block">💌</span>
-          <h2 className="text-xl font-black text-white tracking-tight mb-2">¿Tenés alguna consulta?</h2>
-          <p className="text-stone-400 text-sm mb-7 leading-relaxed">
-            Escribinos por WhatsApp y te respondemos a la brevedad.<br />
-            Hacemos pedidos personalizados para cada ocasión.
+        <div className="max-w-sm mx-auto bg-rose-50 rounded-3xl p-8 text-center border border-rose-100/80 shadow-[0_8px_40px_rgb(244,63,94,0.08)]">
+          <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm shadow-rose-100">
+            <span className="text-2xl">💌</span>
+          </div>
+          <h2 className="text-xl font-extrabold text-stone-800 tracking-tight mb-2">¿Tenés alguna consulta?</h2>
+          <p className="text-stone-500 text-sm mb-7 leading-relaxed max-w-xs mx-auto">
+            Escribinos por WhatsApp y te respondemos a la brevedad. Hacemos pedidos personalizados para cada ocasión.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
               href={`https://wa.me/${config.whatsapp_numero ?? '5493512476048'}`}
               target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3.5 px-7 rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-emerald-900/30 text-sm"
+              className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-7 rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-md shadow-green-200 text-sm"
             >
-              <WhatsAppIcon size={18} /> {config.nombre_contacto_1 ?? 'Belu'}
+              <WhatsAppIcon size={17} /> {config.nombre_contacto_1 ?? 'Belu'}
             </a>
             {config.whatsapp_numero_2 && (
               <a
                 href={`https://wa.me/${config.whatsapp_numero_2}`}
                 target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3.5 px-7 rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-emerald-900/30 text-sm"
+                className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-7 rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-md shadow-green-200 text-sm"
               >
-                <WhatsAppIcon size={18} /> {config.nombre_contacto_2 ?? 'Flor'}
+                <WhatsAppIcon size={17} /> {config.nombre_contacto_2 ?? 'Flor'}
               </a>
             )}
           </div>
@@ -217,24 +232,25 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-stone-100 bg-white py-8 px-5 text-center">
+      <footer className="border-t border-stone-100/80 bg-white/60 backdrop-blur-sm py-10 px-5 text-center">
         <img
           src="/logo.png"
           alt="Dulce Tentación"
-          className="h-12 w-12 object-contain mx-auto mb-3 opacity-80"
+          className="h-14 w-14 object-contain mx-auto mb-3"
           onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
         />
-        <p className="text-sm font-semibold text-stone-700 tracking-tight">Repostería & Cotillón Dulce Tentación</p>
-        <p className="text-xs text-stone-400 mt-1">Córdoba, Argentina · Hecho con <Heart size={10} className="inline text-rose-400" /> y los mejores ingredientes</p>
-        <p className="text-xs text-stone-300 mt-2">Belu: 351 247-6048 · Flor: 351 221-7870</p>
+        <p className="text-sm font-bold text-stone-700 tracking-tight">Repostería & Cotillón Dulce Tentación</p>
+        <p className="text-xs text-stone-400 mt-1.5">
+          Córdoba, Argentina · Hecho con <Heart size={10} className="inline text-rose-400 mx-0.5" /> y los mejores ingredientes
+        </p>
+        <p className="text-xs text-stone-300 mt-1.5">Belu: 351 247-6048 · Flor: 351 221-7870</p>
       </footer>
 
     </div>
   );
 }
 
-// ── ProductCard Premium ───────────────────────────────────────────────────────
-
+// ── ProductCard ───────────────────────────────────────────────────────────────
 function ProductCard({ producto, whatsappNumero }: {
   producto: ProductoConPrecio;
   whatsappNumero: string;
@@ -242,51 +258,54 @@ function ProductCard({ producto, whatsappNumero }: {
   const whatsappUrl = buildWhatsAppLink(whatsappNumero, producto.nombre);
 
   return (
-    <div className="group bg-white rounded-3xl border border-stone-100 shadow-[0_4px_20px_rgb(0,0,0,0.05)] overflow-hidden flex transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.10)]">
+    <div className="group bg-white/80 backdrop-blur-sm rounded-3xl border border-white shadow-[0_4px_20px_rgb(0,0,0,0.05)] overflow-hidden flex transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-[0_16px_40px_rgb(0,0,0,0.09)] hover:border-rose-100/50">
 
       {/* Imagen / placeholder */}
-      <div className="w-32 shrink-0 bg-gradient-to-br from-rose-50 to-amber-50 flex items-center justify-center relative overflow-hidden">
+      <div className="w-28 shrink-0 bg-gradient-to-br from-rose-50 to-amber-50/80 flex items-center justify-center overflow-hidden">
         {producto.image_url ? (
           <img
             src={producto.image_url}
             alt={producto.nombre}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <span className="text-5xl transition-transform duration-300 group-hover:scale-110">{producto.emoji}</span>
+          <span className="text-4xl transition-transform duration-300 group-hover:scale-110 select-none">
+            {producto.emoji}
+          </span>
         )}
       </div>
 
       {/* Info */}
-      <div className="flex-1 p-5 flex flex-col justify-between min-w-0">
+      <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
         <div>
-          <h3 className="font-bold text-stone-800 text-base tracking-tight leading-tight mb-1.5 truncate">
+          <h3 className="font-extrabold text-stone-800 text-[15px] tracking-tight leading-tight mb-1.5 truncate">
             {producto.nombre}
           </h3>
-          <div className="flex items-center gap-3 text-xs text-stone-400 mb-2">
+          <div className="flex items-center gap-2.5 text-xs text-stone-400 mb-2">
             <span className="flex items-center gap-1">
-              <Clock size={10} /> {producto.tiempo_prep_minutos} min
+              <Clock size={9} /> {producto.tiempo_prep_minutos} min
             </span>
-            <span className="flex items-center gap-1">
-              <Truck size={10} /> {producto.rinde_porciones} porc.
-            </span>
+            <span>·</span>
+            <span>{producto.rinde_porciones} porciones</span>
           </div>
           {producto.notas && (
             <p className="text-xs text-stone-400 line-clamp-2 leading-relaxed">{producto.notas}</p>
           )}
         </div>
 
-        <div className="flex items-center justify-between mt-4 gap-3">
+        <div className="flex items-end justify-between mt-3 gap-2">
           <div>
-            <p className="text-[10px] text-stone-400 uppercase tracking-widest font-medium">Precio</p>
-            <p className="text-xl font-black text-rose-500 tracking-tight">{formatARS(producto.precioVenta)}</p>
+            <p className="text-[9px] text-stone-400 uppercase tracking-widest font-semibold mb-0.5">Precio</p>
+            <p className="text-lg font-extrabold text-rose-500 tracking-tight leading-none">
+              {formatARS(producto.precioVenta)}
+            </p>
           </div>
           <a
             href={whatsappUrl}
             target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-full transition-all duration-200 shadow-sm shadow-emerald-200 hover:shadow-emerald-300 hover:-translate-y-0.5 whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3.5 py-2 rounded-full transition-all duration-200 shadow-sm shadow-green-200/70 hover:-translate-y-0.5 whitespace-nowrap"
           >
-            <WhatsAppIcon size={13} /> Pedir
+            <WhatsAppIcon size={12} /> Pedir
           </a>
         </div>
       </div>

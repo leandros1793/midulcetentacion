@@ -1,8 +1,8 @@
 import { useState, useMemo, useRef, type ChangeEvent } from 'react';
 import {
   ChefHat, Plus, Trash2, Save, Clock, Users,
-  Package, TrendingUp, Calculator,
-  ArrowLeft, Info, ImagePlus, Loader2, Receipt,
+  Package, TrendingUp, Calculator, ShoppingBasket,
+  ArrowLeft, Info, ImagePlus, Loader2, Receipt, Search,
 } from 'lucide-react';
 import { ingredientesService, recetasService, configuracionService } from '../../services';
 import { uploadProductImage } from '../../services/supabase/uploadImage';
@@ -25,7 +25,6 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
   const [receta, setReceta] = useState<Receta>(initial);
   const [lineas, setLineas] = useState<RecetaIngrediente[]>(() => recetasService.getLineas(initial.id));
   const [margen, setMargen] = useState(initial.margen_ganancia_porcentaje);
-  const [addingIng, setAddingIng] = useState(false);
   const [newIngId, setNewIngId] = useState('');
   const [newCantidad, setNewCantidad] = useState('');
   const [uploadingImg, setUploadingImg] = useState(false);
@@ -90,7 +89,7 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
       cantidad_usada: Number(newCantidad),
     });
     setLineas(prev => [...prev, li]);
-    setNewIngId(''); setNewCantidad(''); setAddingIng(false);
+    setNewIngId(''); setNewCantidad('');
   };
 
   const handleDeleteLinea = (id: string) => {
@@ -211,98 +210,170 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
           </div>
         </div>
 
-        {/* Cálculo de costos */}
-        <div className="card">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1.5">
-              <Calculator size={13} /> Cálculo de costos
-            </h3>
-            {!addingIng && (
-              <button onClick={() => setAddingIng(true)} className="text-rose-500 hover:text-rose-600 flex items-center gap-1 text-xs font-medium">
-                <Plus size={14} /> Ingrediente
-              </button>
+        {/* ── Ingredientes de la receta ─────────────────────────────────── */}
+        <div className="bg-white rounded-2xl border border-stone-100 shadow-[0_4px_20px_rgb(0,0,0,0.05)] overflow-hidden">
+
+          {/* Header */}
+          <div className="px-4 pt-4 pb-3 flex items-center justify-between border-b border-stone-50">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 bg-rose-50 rounded-xl flex items-center justify-center">
+                <ShoppingBasket size={14} className="text-rose-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-stone-700">Ingredientes</h3>
+                <p className="text-[10px] text-stone-400">
+                  {lineas.length === 0 ? 'Ninguno agregado aún' : `${lineas.length} ingrediente${lineas.length !== 1 ? 's' : ''} · ${formatARS(costos.costoIng)}`}
+                </p>
+              </div>
+            </div>
+            {costos.costoIng > 0 && (
+              <span className="text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-full">
+                {formatARS(costos.costoIng)}
+              </span>
             )}
           </div>
 
-          {/* Tabla de líneas */}
-          <div className="space-y-2">
-            {lineas.length === 0 && !addingIng && (
-              <p className="text-xs text-gray-400 text-center py-4">
-                Sin ingredientes. Agregá el primero.
-              </p>
+          {/* Lista de ingredientes agregados */}
+          <div className="px-4 pt-3 space-y-2">
+            {lineas.length === 0 && (
+              <div className="py-6 text-center">
+                <div className="w-12 h-12 bg-stone-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <Calculator size={20} className="text-stone-200" />
+                </div>
+                <p className="text-xs font-medium text-stone-400">Sin ingredientes todavía</p>
+                <p className="text-[10px] text-stone-300 mt-0.5">Usá el selector de abajo para agregar</p>
+              </div>
             )}
+
             {lineas.map(li => {
               const ing = ingMap[li.ingrediente_id];
               if (!ing) return null;
               const costoLinea = calcCostoLinea(li, ing);
+              const pctDelTotal = costos.costoIng > 0
+                ? Math.round((costoLinea / costos.costoIng) * 100)
+                : 0;
               return (
-                <div key={li.id} className="flex items-center gap-2 bg-warm-50 rounded-xl p-2.5">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-700 truncate">{ing.nombre}</p>
-                    <p className="text-xs text-gray-400">
-                      {li.cantidad_usada} {ing.unidad_medida_receta.toLowerCase()} · {formatARS(calcCostoPorUnidadReceta(ing))}/u
-                    </p>
+                <div
+                  key={li.id}
+                  className="group flex items-center gap-3 bg-stone-50 hover:bg-rose-50/40 rounded-2xl p-3 transition-colors duration-150"
+                >
+                  {/* Icono ingrediente */}
+                  <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-stone-100">
+                    <span className="text-sm">🥄</span>
                   </div>
-                  <p className="text-sm font-bold text-gray-800 shrink-0">{formatARS(costoLinea)}</p>
-                  <button onClick={() => handleDeleteLinea(li.id)} className="text-gray-300 hover:text-red-400 transition-colors">
-                    <Trash2 size={14} />
-                  </button>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-stone-700 truncate leading-tight">
+                      {ing.nombre}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[10px] font-medium text-stone-500 bg-white px-1.5 py-0.5 rounded-md border border-stone-100">
+                        {li.cantidad_usada} {ing.unidad_medida_receta.toLowerCase()}
+                      </span>
+                      <span className="text-[10px] text-stone-300">·</span>
+                      <span className="text-[10px] text-stone-400">
+                        {formatARS(calcCostoPorUnidadReceta(ing))}/u
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Costo + % + papelera */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-stone-800 tabular-nums">
+                        {formatARS(costoLinea)}
+                      </p>
+                      <p className="text-[10px] text-stone-400">{pctDelTotal}% del total</p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteLinea(li.id)}
+                      className="w-7 h-7 rounded-xl flex items-center justify-center text-stone-300 hover:bg-red-50 hover:text-red-400 transition-all duration-150 opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
               );
             })}
+          </div>
 
-            {/* Fila de agregar */}
-            {addingIng && (
-              <div className="bg-rose-50 rounded-xl p-3 space-y-2 border border-rose-200">
+          {/* ── Formulario para agregar ingrediente (siempre visible) ── */}
+          <div className="px-4 pb-4 pt-3">
+            <div className="bg-amber-50/60 border border-amber-100 rounded-2xl p-3 space-y-2.5">
+              <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest flex items-center gap-1.5">
+                <Plus size={10} /> Agregar ingrediente
+              </p>
+
+              {/* Selector */}
+              <div className="relative">
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-300 pointer-events-none" />
                 <select
-                  className="input text-sm"
+                  className="input pl-8 text-sm bg-white"
                   value={newIngId}
-                  onChange={e => setNewIngId(e.target.value)}
+                  onChange={e => { setNewIngId(e.target.value); setNewCantidad(''); }}
                 >
-                  <option value="">— Seleccionar ingrediente —</option>
+                  <option value="">— Elegir ingrediente —</option>
                   {ingDisponibles.map(i => (
                     <option key={i.id} value={i.id}>{i.nombre}</option>
                   ))}
                 </select>
-                {newIngId && (
-                  <div className="flex gap-2 items-center">
-                    <div className="flex-1">
-                      <input
-                        type="number" min="0" step="any" placeholder="Cantidad"
-                        className="input text-sm"
-                        value={newCantidad}
-                        onChange={e => setNewCantidad(e.target.value)}
-                      />
-                    </div>
-                    <span className="text-xs text-gray-400 shrink-0">
-                      {ingMap[newIngId]?.unidad_medida_receta ?? ''}
-                    </span>
-                  </div>
-                )}
-                {newIngId && newCantidad && (
-                  <p className="text-xs text-rose-600 font-medium">
-                    = {formatARS(Number(newCantidad) * calcCostoPorUnidadReceta(ingMap[newIngId]))}
-                  </p>
-                )}
-                <div className="flex gap-2">
-                  <button onClick={() => { setAddingIng(false); setNewIngId(''); setNewCantidad(''); }} className="btn-secondary flex-1 text-xs justify-center py-1.5">
-                    Cancelar
-                  </button>
-                  <button onClick={handleAddLinea} className="btn-primary flex-1 text-xs justify-center py-1.5">
-                    <Plus size={13} /> Agregar
-                  </button>
-                </div>
               </div>
-            )}
-          </div>
 
-          {/* Sub-total ingredientes */}
-          {lineas.length > 0 && (
-            <div className="flex justify-between items-center mt-3 pt-3 border-t border-warm-100">
-              <span className="text-xs text-gray-400">Costo ingredientes</span>
-              <span className="text-sm font-bold text-gray-700">{formatARS(costos.costoIng)}</span>
+              {/* Cantidad + unidad (solo cuando hay ingrediente elegido) */}
+              {newIngId && (
+                <div className="flex gap-2 items-stretch">
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      placeholder="Cantidad…"
+                      autoFocus
+                      className="input text-sm bg-white"
+                      value={newCantidad}
+                      onChange={e => setNewCantidad(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleAddLinea()}
+                    />
+                  </div>
+                  {/* Badge de unidad */}
+                  <div className="flex items-center px-3 bg-white rounded-xl border border-stone-200 text-xs font-bold text-stone-500 shrink-0">
+                    {ingMap[newIngId]?.unidad_medida_receta ?? ''}
+                  </div>
+                </div>
+              )}
+
+              {/* Preview del costo antes de agregar */}
+              {newIngId && newCantidad && Number(newCantidad) > 0 && (
+                <div className="flex items-center justify-between bg-white rounded-xl px-3 py-2 border border-amber-100">
+                  <span className="text-[10px] text-stone-400">Costo de esta línea</span>
+                  <span className="text-sm font-bold text-amber-700 tabular-nums">
+                    {formatARS(Number(newCantidad) * calcCostoPorUnidadReceta(ingMap[newIngId]))}
+                  </span>
+                </div>
+              )}
+
+              {/* Botón agregar */}
+              <button
+                onClick={handleAddLinea}
+                disabled={!newIngId || !newCantidad || Number(newCantidad) <= 0}
+                className="w-full flex items-center justify-center gap-1.5 bg-rose-500 hover:bg-rose-600 disabled:bg-stone-200 disabled:text-stone-400 text-white font-bold text-xs py-2.5 rounded-xl transition-all duration-150"
+              >
+                <Plus size={14} /> Agregar a la receta
+              </button>
+
+              {ingDisponibles.length === 0 && ingredientes.length > 0 && (
+                <p className="text-[10px] text-center text-stone-400">
+                  ✓ Todos los ingredientes ya están en la receta
+                </p>
+              )}
+              {ingredientes.length === 0 && (
+                <p className="text-[10px] text-center text-amber-600">
+                  ⚠️ No hay ingredientes cargados. Cargalos primero desde "Ingredientes".
+                </p>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* ── Tarjeta de Desglose de Costos ──────────────────────────────── */}

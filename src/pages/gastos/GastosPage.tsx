@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Receipt, Trash2, Calendar } from 'lucide-react';
+import { Plus, Receipt, Trash2, Calendar, Edit2 } from 'lucide-react';
 import { gastosService } from '../../services';
 import type { GastoGeneral, GastoForm, CategoriaGasto } from '../../types';
 import Modal from '../../components/ui/Modal';
@@ -7,7 +7,7 @@ import EmptyState from '../../components/ui/EmptyState';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
 const CATEGORIAS: { value: string; label: string }[] = [
-  { value: 'Fijo', label: 'Fijo (alquiler, servicios básicos)' },
+  { value: 'Fijo',     label: 'Fijo (alquiler, servicios básicos)' },
   { value: 'Variable', label: 'Variable (publicidad, insumos, etc.)' },
 ];
 
@@ -21,18 +21,36 @@ function formatARS(n: number) {
 }
 
 export default function GastosPage() {
-  const [gastos, setGastos] = useState<GastoGeneral[]>(() => gastosService.getAll());
+  const [gastos, setGastos]   = useState<GastoGeneral[]>(() => gastosService.getAll());
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<GastoForm>(DEFAULT_FORM);
-  const [delId, setDelId] = useState<string | null>(null);
+  const [editing, setEditing]  = useState<GastoGeneral | null>(null);
+  const [form, setForm]        = useState<GastoForm>(DEFAULT_FORM);
+  const [delId, setDelId]      = useState<string | null>(null);
 
   const refresh = () => setGastos(gastosService.getAll());
 
-  const handleCreate = () => {
+  const openNew = () => {
+    setEditing(null);
+    setForm(DEFAULT_FORM);
+    setShowForm(true);
+  };
+
+  const openEdit = (g: GastoGeneral) => {
+    setEditing(g);
+    setForm({ descripcion: g.descripcion, categoria: g.categoria, monto: g.monto, fecha: g.fecha });
+    setShowForm(true);
+  };
+
+  const handleSubmit = () => {
     if (!form.descripcion.trim() || form.monto <= 0) return;
-    gastosService.create(form);
+    if (editing) {
+      gastosService.update(editing.id, form);
+    } else {
+      gastosService.create(form);
+    }
     refresh();
     setShowForm(false);
+    setEditing(null);
     setForm(DEFAULT_FORM);
   };
 
@@ -61,7 +79,7 @@ export default function GastosPage() {
           <h2 className="font-bold text-gray-800">Gastos Generales</h2>
           <p className="text-xs text-gray-400">{gastos.length} registros</p>
         </div>
-        <button onClick={() => setShowForm(true)} className="btn-primary text-sm">
+        <button onClick={openNew} className="btn-primary text-sm">
           <Plus size={16} /> Registrar
         </button>
       </div>
@@ -77,7 +95,7 @@ export default function GastosPage() {
       {gastos.length === 0 ? (
         <EmptyState icon={Receipt} title="Sin gastos registrados"
           description="Registrá tus gastos fijos y variables para tener el panorama completo."
-          action={{ label: '+ Registrar gasto', onClick: () => setShowForm(true) }} />
+          action={{ label: '+ Registrar gasto', onClick: openNew }} />
       ) : (
         <div className="space-y-4">
           {months.map(month => {
@@ -108,9 +126,22 @@ export default function GastosPage() {
                         </div>
                       </div>
                       <p className="text-sm font-bold text-gray-800 shrink-0">{formatARS(g.monto)}</p>
-                      <button onClick={() => setDelId(g.id)} className="text-gray-200 hover:text-red-400 transition-colors">
-                        <Trash2 size={14} />
-                      </button>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => openEdit(g)}
+                          className="p-1.5 text-gray-300 hover:text-blue-400 transition-colors"
+                          title="Editar"
+                        >
+                          <Edit2 size={13} />
+                        </button>
+                        <button
+                          onClick={() => setDelId(g.id)}
+                          className="p-1.5 text-gray-300 hover:text-red-400 transition-colors"
+                          title="Eliminar"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -120,43 +151,65 @@ export default function GastosPage() {
         </div>
       )}
 
-      <Modal open={showForm} onClose={() => setShowForm(false)} title="Registrar gasto">
+      <Modal
+        open={showForm}
+        onClose={() => { setShowForm(false); setEditing(null); setForm(DEFAULT_FORM); }}
+        title={editing ? 'Editar gasto' : 'Registrar gasto'}
+      >
         <div className="space-y-3">
           <div>
             <label className="label">Descripción *</label>
-            <input className="input" placeholder="ej. Luz EPEC, Publicidad Instagram"
-              value={form.descripcion} onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))} />
+            <input
+              className="input"
+              placeholder="ej. Luz EPEC, Publicidad Instagram"
+              value={form.descripcion}
+              onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="label">Monto ($) *</label>
-              <input type="number" min="0" step="any" className="input"
-                value={form.monto || ''} onChange={e => setForm(f => ({ ...f, monto: Number(e.target.value) }))} />
+              <input
+                type="number" min="0" step="any" className="input"
+                value={form.monto || ''}
+                onChange={e => setForm(f => ({ ...f, monto: Number(e.target.value) }))}
+              />
             </div>
             <div>
               <label className="label">Fecha</label>
-              <input type="date" className="input"
-                value={form.fecha} onChange={e => setForm(f => ({ ...f, fecha: e.target.value }))} />
+              <input
+                type="date" className="input"
+                value={form.fecha}
+                onChange={e => setForm(f => ({ ...f, fecha: e.target.value }))}
+              />
             </div>
           </div>
           <div>
             <label className="label">Categoría</label>
-            <select className="input" value={form.categoria}
-              onChange={e => setForm(f => ({ ...f, categoria: e.target.value as CategoriaGasto }))}>
+            <select
+              className="input" value={form.categoria}
+              onChange={e => setForm(f => ({ ...f, categoria: e.target.value as CategoriaGasto }))}
+            >
               {CATEGORIAS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
           </div>
-          <button onClick={handleCreate} disabled={!form.descripcion.trim() || form.monto <= 0}
-            className="btn-primary w-full justify-center mt-1">
-            Registrar gasto
+          <button
+            onClick={handleSubmit}
+            disabled={!form.descripcion.trim() || form.monto <= 0}
+            className="btn-primary w-full justify-center mt-1"
+          >
+            {editing ? 'Guardar cambios' : 'Registrar gasto'}
           </button>
         </div>
       </Modal>
 
-      <ConfirmDialog open={!!delId} title="Eliminar gasto"
+      <ConfirmDialog
+        open={!!delId}
+        title="Eliminar gasto"
         message="¿Eliminar este registro de gasto?"
         onConfirm={() => delId && handleDelete(delId)}
-        onCancel={() => setDelId(null)} />
+        onCancel={() => setDelId(null)}
+      />
     </div>
   );
 }

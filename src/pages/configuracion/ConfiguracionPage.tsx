@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Settings, Save, Info, MessageCircle, ExternalLink, Instagram, Link2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Settings, Save, Info, MessageCircle, ExternalLink, Instagram, Link2, Loader2 } from 'lucide-react';
 import { configuracionService } from '../../services';
 import type { Configuracion } from '../../types';
 
@@ -8,36 +8,56 @@ function formatARS(n: number) {
 }
 
 export default function ConfiguracionPage() {
-  const [config, setConfig] = useState<Configuracion>(() => configuracionService.get());
-  const [saved, setSaved]   = useState(false);
+  const [config,   setConfig]   = useState<Configuracion | null>(null);
+  const [loading,  setLoading]  = useState(true);
+  const [saving,   setSaving]   = useState(false);
+  const [saved,    setSaved]    = useState(false);
 
-  // Helper para actualizar un destacado por índice
+  useEffect(() => {
+    configuracionService.get()
+      .then(setConfig)
+      .finally(() => setLoading(false));
+  }, []);
+
   const setDestacado = (idx: number, val: string) => {
-    const arr = [...(config.instagram_destacados ?? ['', '', ''])];
+    const arr = [...(config?.instagram_destacados ?? ['', '', ''])];
     arr[idx] = val;
-    setConfig(c => ({ ...c, instagram_destacados: arr }));
+    setConfig(c => c ? { ...c, instagram_destacados: arr } : c);
   };
   const destacados = [
-    config.instagram_destacados?.[0] ?? '',
-    config.instagram_destacados?.[1] ?? '',
-    config.instagram_destacados?.[2] ?? '',
+    config?.instagram_destacados?.[0] ?? '',
+    config?.instagram_destacados?.[1] ?? '',
+    config?.instagram_destacados?.[2] ?? '',
   ];
 
-  const handleSave = () => {
-    configuracionService.update({
-      valor_hora_trabajo:     config.valor_hora_trabajo,
-      costo_fijo_por_hora:    config.costo_fijo_por_hora,
-      nombre_contacto_1:      config.nombre_contacto_1,
-      whatsapp_numero:        config.whatsapp_numero,
-      nombre_contacto_2:      config.nombre_contacto_2,
-      whatsapp_numero_2:      config.whatsapp_numero_2,
-      instagram_usuario:      config.instagram_usuario,
-      instagram_url:          config.instagram_url,
-      instagram_destacados:   config.instagram_destacados,
-    });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    if (!config) return;
+    setSaving(true);
+    try {
+      const updated = await configuracionService.update({
+        valor_hora_trabajo:   config.valor_hora_trabajo,
+        costo_fijo_por_hora:  config.costo_fijo_por_hora,
+        nombre_contacto_1:    config.nombre_contacto_1,
+        whatsapp_numero:      config.whatsapp_numero,
+        nombre_contacto_2:    config.nombre_contacto_2,
+        whatsapp_numero_2:    config.whatsapp_numero_2,
+        instagram_usuario:    config.instagram_usuario,
+        instagram_url:        config.instagram_url,
+        instagram_destacados: config.instagram_destacados,
+      });
+      setConfig(updated);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading || !config) return (
+    <div className="flex justify-center py-16">
+      <Loader2 size={24} className="animate-spin text-rose-300" />
+    </div>
+  );
 
   return (
     <div className="p-4 space-y-4 pb-8">
@@ -197,9 +217,13 @@ export default function ConfiguracionPage() {
       {/* ── Guardar ───────────────────────────────────────────────────────────── */}
       <button
         onClick={handleSave}
+        disabled={saving}
         className={`btn-primary w-full justify-center ${saved ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}
       >
-        <Save size={16} /> {saved ? '¡Guardado!' : 'Guardar configuración'}
+        {saving
+          ? <><Loader2 size={16} className="animate-spin" /> Guardando…</>
+          : <><Save size={16} /> {saved ? '¡Guardado! ✓' : 'Guardar configuración'}</>
+        }
       </button>
 
       <div className="text-center text-xs text-stone-300 pt-2">

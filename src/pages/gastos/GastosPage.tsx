@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Receipt, Trash2, Calendar, Edit2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Plus, Receipt, Trash2, Calendar, Edit2, Loader2 } from 'lucide-react';
 import { gastosService } from '../../services';
 import type { GastoGeneral, GastoForm, CategoriaGasto } from '../../types';
 import Modal from '../../components/ui/Modal';
@@ -21,13 +21,21 @@ function formatARS(n: number) {
 }
 
 export default function GastosPage() {
-  const [gastos, setGastos]   = useState<GastoGeneral[]>(() => gastosService.getAll());
+  const [gastos,   setGastos]   = useState<GastoGeneral[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [saving,   setSaving]   = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing]  = useState<GastoGeneral | null>(null);
-  const [form, setForm]        = useState<GastoForm>(DEFAULT_FORM);
-  const [delId, setDelId]      = useState<string | null>(null);
+  const [editing,  setEditing]  = useState<GastoGeneral | null>(null);
+  const [form,     setForm]     = useState<GastoForm>(DEFAULT_FORM);
+  const [delId,    setDelId]    = useState<string | null>(null);
 
-  const refresh = () => setGastos(gastosService.getAll());
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try { setGastos(await gastosService.getAll()); }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { refresh(); }, [refresh]);
 
   const openNew = () => {
     setEditing(null);
@@ -41,20 +49,22 @@ export default function GastosPage() {
     setShowForm(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.descripcion.trim() || form.monto <= 0) return;
-    if (editing) {
-      gastosService.update(editing.id, form);
-    } else {
-      gastosService.create(form);
+    setSaving(true);
+    try {
+      if (editing) await gastosService.update(editing.id, form);
+      else         await gastosService.create(form);
+      await refresh();
+      setShowForm(false);
+      setEditing(null);
+      setForm(DEFAULT_FORM);
+    } finally {
+      setSaving(false);
     }
-    refresh();
-    setShowForm(false);
-    setEditing(null);
-    setForm(DEFAULT_FORM);
   };
 
-  const handleDelete = (id: string) => { gastosService.delete(id); refresh(); setDelId(null); };
+  const handleDelete = async (id: string) => { await gastosService.delete(id); await refresh(); setDelId(null); };
 
   // Agrupar por mes
   const byMonth = gastos.reduce<Record<string, GastoGeneral[]>>((acc, g) => {
@@ -92,7 +102,11 @@ export default function GastosPage() {
         </div>
       )}
 
-      {gastos.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 size={24} className="animate-spin text-rose-300" />
+        </div>
+      ) : gastos.length === 0 ? (
         <EmptyState icon={Receipt} title="Sin gastos registrados"
           description="Registrá tus gastos fijos y variables para tener el panorama completo."
           action={{ label: '+ Registrar gasto', onClick: openNew }} />
@@ -195,10 +209,10 @@ export default function GastosPage() {
           </div>
           <button
             onClick={handleSubmit}
-            disabled={!form.descripcion.trim() || form.monto <= 0}
+            disabled={saving || !form.descripcion.trim() || form.monto <= 0}
             className="btn-primary w-full justify-center mt-1"
           >
-            {editing ? 'Guardar cambios' : 'Registrar gasto'}
+            {saving ? <><Loader2 size={14} className="animate-spin" /> Guardando…</> : (editing ? 'Guardar cambios' : 'Registrar gasto')}
           </button>
         </div>
       </Modal>

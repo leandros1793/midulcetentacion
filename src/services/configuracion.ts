@@ -1,35 +1,45 @@
-import { v4 as uuidv4 } from 'uuid';
-import * as storage from './storage';
+import { supabase } from '../lib/supabase';
 import type { Configuracion } from '../types';
 
-const KEY = 'mdt_configuracion';
-const DEFAULT_CONFIG: Configuracion = {
-  id: 'singleton',
-  valor_hora_trabajo: 500,
-  costo_fijo_por_hora: 100,
-  nombre_contacto_1: 'Belu',
-  whatsapp_numero: '5493512476048',
-  nombre_contacto_2: 'Flor',
-  whatsapp_numero_2: '5493512217870',
-  instagram_usuario: '@midulce_tentacion7',
-  instagram_url: 'https://www.instagram.com/midulce_tentacion7/',
+// Valores por defecto — se fusionan con lo que devuelve Supabase
+// para que los campos nuevos siempre tengan un valor inicial.
+const DEFAULTS: Omit<Configuracion, 'updated_at'> = {
+  id:                   'singleton',
+  valor_hora_trabajo:   500,
+  costo_fijo_por_hora:  100,
+  nombre_contacto_1:    'Belu',
+  whatsapp_numero:      '',
+  nombre_contacto_2:    'Flor',
+  whatsapp_numero_2:    '',
+  instagram_usuario:    '',
+  instagram_url:        '',
   instagram_destacados: [],
-  updated_at: new Date().toISOString(),
 };
 
 export const configuracionService = {
-  get: (): Configuracion => {
-    const all = storage.getAll<Configuracion>(KEY);
-    if (all.length === 0) {
-      storage.create<Configuracion>(KEY, DEFAULT_CONFIG);
-      return DEFAULT_CONFIG;
-    }
-    // Fusiona con defaults para que campos nuevos siempre tengan valor
-    return { ...DEFAULT_CONFIG, ...all[0] };
+  get: async (): Promise<Configuracion> => {
+    const { data, error } = await supabase
+      .from('configuracion')
+      .select('*')
+      .eq('id', 'singleton')
+      .single();
+    if (error) throw error;
+    // Fusionamos defaults para que campos nuevos/nulos siempre tengan valor
+    return {
+      ...DEFAULTS,
+      ...data,
+      instagram_destacados: data?.instagram_destacados ?? [],
+    } as Configuracion;
   },
-  update: (data: Partial<Omit<Configuracion, 'id'>>): Configuracion => {
-    const current = configuracionService.get();
-    const updated = { ...current, ...data, id: 'singleton', updated_at: new Date().toISOString() };
-    return storage.update<Configuracion>(KEY, updated);
+
+  update: async (patch: Partial<Omit<Configuracion, 'id'>>): Promise<Configuracion> => {
+    const { data, error } = await supabase
+      .from('configuracion')
+      .update({ ...patch, updated_at: new Date().toISOString() })
+      .eq('id', 'singleton')
+      .select()
+      .single();
+    if (error) throw error;
+    return { ...DEFAULTS, ...data, instagram_destacados: data?.instagram_destacados ?? [] } as Configuracion;
   },
 };

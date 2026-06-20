@@ -1,53 +1,81 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   TrendingUp, ShoppingBasket, BookOpen, Receipt,
-  Plus, ChevronRight, Sparkles,
+  ChevronRight, Sparkles, Loader2,
 } from 'lucide-react';
 import { ingredientesService, recetasService, gastosService, configuracionService } from '../../services';
-import { calcCostoPorUnidadReceta, calcCostoLinea } from '../../types';
+import { calcCostoLinea } from '../../types';
+import type { Ingrediente, Receta, RecetaIngrediente, GastoGeneral } from '../../types';
 
 function formatARS(n: number) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n);
 }
 
+interface DashboardStats {
+  numIngredientes: number;
+  numRecetas: number;
+  numGastos: number;
+  totalGastosGenerales: number;
+  masRentable: { receta: Receta; costoTotal: number; precioVenta: number; ganancia: number } | null;
+}
+
+function calcStats(
+  ingredientes: Ingrediente[],
+  recetas: Receta[],
+  allLineas: RecetaIngrediente[],
+  gastosDelMes: GastoGeneral[],
+  config: { valor_hora_trabajo: number; costo_fijo_por_hora: number },
+): DashboardStats {
+  const totalGastosGenerales = gastosDelMes.reduce((s, g) => s + g.monto, 0);
+  const ingMap = Object.fromEntries(ingredientes.map(i => [i.id, i]));
+
+  const rentabilidades = recetas.map(receta => {
+    const lineas = allLineas.filter(l => l.receta_id === receta.id);
+    const costoIng = lineas.reduce((s, li) => {
+      const ing = ingMap[li.ingrediente_id];
+      return ing ? s + calcCostoLinea(li, ing) : s;
+    }, 0);
+    const horasPrep = receta.tiempo_prep_minutos / 60;
+    const costoTotal = costoIng
+      + horasPrep * config.valor_hora_trabajo
+      + horasPrep * config.costo_fijo_por_hora
+      + receta.costo_packaging_fijo;
+    const precioVenta = costoTotal * (1 + receta.margen_ganancia_porcentaje / 100);
+    return { receta, costoTotal, precioVenta, ganancia: precioVenta - costoTotal };
+  });
+
+  const masRentable = rentabilidades.sort((a, b) => b.ganancia - a.ganancia)[0] ?? null;
+  return { numIngredientes: ingredientes.length, numRecetas: recetas.length,
+    numGastos: gastosDelMes.length, totalGastosGenerales, masRentable };
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const now = new Date();
+  const [stats,   setStats]   = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const stats = useMemo(() => {
-    const ingredientes = ingredientesService.getAll();
-    const recetas = recetasService.getAll();
-    const config = configuracionService.get();
-    const gastosDelMes = gastosService.getDelMes(now.getFullYear(), now.getMonth());
-
-    const totalGastosGenerales = gastosDelMes.reduce((s, g) => s + g.monto, 0);
-
-    // Calcular rentabilidad de cada receta
-    const rentabilidades = recetas.map(receta => {
-      const lineas = recetasService.getLineas(receta.id);
-      const costoIng = lineas.reduce((s, li) => {
-        const ing = ingredientes.find(i => i.id === li.ingrediente_id);
-        return ing ? s + calcCostoLinea(li, ing) : s;
-      }, 0);
-      const horasPrep = receta.tiempo_prep_minutos / 60;
-      const costoMO = horasPrep * config.valor_hora_trabajo;
-      const costoFijo = horasPrep * config.costo_fijo_por_hora;
-      const costoTotal = costoIng + costoMO + costoFijo + receta.costo_packaging_fijo;
-      const precioVenta = costoTotal * (1 + receta.margen_ganancia_porcentaje / 100);
-      const ganancia = precioVenta - costoTotal;
-      return { receta, costoTotal, precioVenta, ganancia };
-    });
-
-    const masRentable = rentabilidades.sort((a, b) => b.ganancia - a.ganancia)[0];
-
-    return {
-      numIngredientes: ingredientes.length,
-      numRecetas: recetas.length,
-      numGastos: gastosDelMes.length,
-      totalGastosGenerales,
-      masRentable,
-    };
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      try {
+        const [ingredientes, recetas, allLineas, gastosDelMes, config] = await Promise.all([
+          ingredientesService.getAll(),
+          recetasService.getAll(),
+          recetasService.getAllLineas(),
+          gastosService.getDelMes(now.getFullYear(), now.getMonth()),
+          configuracionService.get(),
+        ]);
+        if (!cancelled) setStats(calcStats(ingredientes, recetas, allLineas, gastosDelMes, config));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const mes = now.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
@@ -65,45 +93,78 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-3">
-        <KpiCard
-          icon={<Receipt size={18} className="text-amber-500" />}
-          label="Gastos del mes"
-          value={formatARS(stats.totalGastosGenerales)}
-          sub={`${stats.numGastos} registros`}
-          bg="bg-amber-50"
-        />
-        <KpiCard
-          icon={<ShoppingBasket size={18} className="text-emerald-500" />}
-          label="Ingredientes"
-          value={String(stats.numIngredientes)}
-          sub="en stock"
-          bg="bg-emerald-50"
-        />
-        <KpiCard
-          icon={<BookOpen size={18} className="text-violet-500" />}
-          label="Recetas"
-          value={String(stats.numRecetas)}
-          sub="activas"
-          bg="bg-violet-50"
-        />
-        <KpiCard
-          icon={<TrendingUp size={18} className="text-rose-500" />}
-          label="Más rentable"
-          value={stats.masRentable ? formatARS(stats.masRentable.ganancia) : '—'}
-          sub={stats.masRentable?.receta.nombre ?? 'Sin recetas'}
-          bg="bg-rose-50"
-        />
-      </div>
+      {loading || !stats ? (
+        <div className="flex justify-center py-10">
+          <Loader2 size={24} className="animate-spin text-rose-300" />
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <KpiCard
+              icon={<Receipt size={18} className="text-amber-500" />}
+              label="Gastos del mes"
+              value={formatARS(stats.totalGastosGenerales)}
+              sub={`${stats.numGastos} registros`}
+              bg="bg-amber-50"
+            />
+            <KpiCard
+              icon={<ShoppingBasket size={18} className="text-emerald-500" />}
+              label="Ingredientes"
+              value={String(stats.numIngredientes)}
+              sub="en stock"
+              bg="bg-emerald-50"
+            />
+            <KpiCard
+              icon={<BookOpen size={18} className="text-violet-500" />}
+              label="Recetas"
+              value={String(stats.numRecetas)}
+              sub="activas"
+              bg="bg-violet-50"
+            />
+            <KpiCard
+              icon={<TrendingUp size={18} className="text-rose-500" />}
+              label="Más rentable"
+              value={stats.masRentable ? formatARS(stats.masRentable.ganancia) : '—'}
+              sub={stats.masRentable?.receta.nombre ?? 'Sin recetas'}
+              bg="bg-rose-50"
+            />
+          </div>
 
-      {/* Acciones rápidas */}
+          {/* Top receta */}
+          {stats.masRentable && (
+            <div className="card">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Producto destacado</h3>
+              <div className="bg-gradient-to-br from-rose-50 to-amber-50 rounded-xl p-4 border border-rose-100">
+                <p className="text-xs text-rose-400 font-medium mb-1">⭐ Más rentable del portfolio</p>
+                <p className="font-bold text-gray-800 text-base">{stats.masRentable.receta.nombre}</p>
+                <div className="flex gap-4 mt-3">
+                  <div>
+                    <p className="text-xs text-gray-400">Costo total</p>
+                    <p className="text-sm font-semibold text-gray-700">{formatARS(stats.masRentable.costoTotal)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Precio venta</p>
+                    <p className="text-sm font-semibold text-rose-600">{formatARS(stats.masRentable.precioVenta)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Ganancia</p>
+                    <p className="text-sm font-semibold text-emerald-600">{formatARS(stats.masRentable.ganancia)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Acciones rápidas — siempre visible */}
       <div className="card">
         <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Acceso rápido</h3>
         <div className="space-y-2">
           {[
             { label: 'Nueva receta / cálculo de costos', icon: <BookOpen size={16} />, path: '/dashboard/recetas', color: 'text-violet-500', bg: 'bg-violet-50' },
-            { label: 'Agregar ingrediente',        icon: <ShoppingBasket size={16} />, path: '/dashboard/ingredientes', color: 'text-emerald-500', bg: 'bg-emerald-50' },
-            { label: 'Registrar gasto',            icon: <Receipt size={16} />, path: '/dashboard/gastos', color: 'text-amber-500', bg: 'bg-amber-50' },
+            { label: 'Agregar ingrediente',              icon: <ShoppingBasket size={16} />, path: '/dashboard/ingredientes', color: 'text-emerald-500', bg: 'bg-emerald-50' },
+            { label: 'Registrar gasto',                  icon: <Receipt size={16} />, path: '/dashboard/gastos', color: 'text-amber-500', bg: 'bg-amber-50' },
           ].map(item => (
             <button
               key={item.path}
@@ -117,31 +178,6 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
-
-      {/* Top recetas */}
-      {stats.masRentable && (
-        <div className="card">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Producto destacado</h3>
-          <div className="bg-gradient-to-br from-rose-50 to-blush-50 rounded-xl p-4 border border-rose-100">
-            <p className="text-xs text-rose-400 font-medium mb-1">⭐ Más rentable del portfolio</p>
-            <p className="font-bold text-gray-800 text-base">{stats.masRentable.receta.nombre}</p>
-            <div className="flex gap-4 mt-3">
-              <div>
-                <p className="text-xs text-gray-400">Costo total</p>
-                <p className="text-sm font-semibold text-gray-700">{formatARS(stats.masRentable.costoTotal)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">Precio venta</p>
-                <p className="text-sm font-semibold text-rose-600">{formatARS(stats.masRentable.precioVenta)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">Ganancia</p>
-                <p className="text-sm font-semibold text-emerald-600">{formatARS(stats.masRentable.ganancia)}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

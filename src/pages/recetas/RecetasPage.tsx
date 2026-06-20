@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, BookOpen, Clock, Users, ChevronRight, Trash2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Plus, BookOpen, Clock, Users, ChevronRight, Trash2, Loader2 } from 'lucide-react';
 import { recetasService } from '../../services';
 import type { Receta, RecetaForm } from '../../types';
 import Modal from '../../components/ui/Modal';
@@ -13,25 +13,38 @@ const DEFAULT_FORM: RecetaForm = {
 };
 
 export default function RecetasPage() {
-  const [recetas, setRecetas] = useState<Receta[]>(() => recetasService.getAll());
+  const [recetas,  setRecetas]  = useState<Receta[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [creating, setCreating] = useState(false);
   const [selected, setSelected] = useState<Receta | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<RecetaForm>(DEFAULT_FORM);
-  const [delId, setDelId] = useState<string | null>(null);
+  const [form,     setForm]     = useState<RecetaForm>(DEFAULT_FORM);
+  const [delId,    setDelId]    = useState<string | null>(null);
 
-  const refresh = () => setRecetas(recetasService.getAll());
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try { setRecetas(await recetasService.getAll()); }
+    finally { setLoading(false); }
+  }, []);
 
-  const handleCreate = () => {
-    const nueva = recetasService.create(form);
-    refresh();
-    setShowForm(false);
-    setForm(DEFAULT_FORM);
-    setSelected(nueva);
+  useEffect(() => { refresh(); }, [refresh]);
+
+  const handleCreate = async () => {
+    setCreating(true);
+    try {
+      const nueva = await recetasService.create(form);
+      await refresh();
+      setShowForm(false);
+      setForm(DEFAULT_FORM);
+      setSelected(nueva);
+    } finally {
+      setCreating(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    recetasService.delete(id);
-    refresh();
+  const handleDelete = async (id: string) => {
+    await recetasService.delete(id);
+    await refresh();
     setDelId(null);
   };
 
@@ -58,7 +71,11 @@ export default function RecetasPage() {
         </button>
       </div>
 
-      {recetas.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 size={24} className="animate-spin text-rose-300" />
+        </div>
+      ) : recetas.length === 0 ? (
         <EmptyState
           icon={BookOpen}
           title="Sin recetas todavía"
@@ -130,8 +147,8 @@ export default function RecetasPage() {
             <textarea className="input resize-none" rows={2}
               value={form.notas} onChange={e => setForm(f => ({ ...f, notas: e.target.value }))} />
           </div>
-          <button onClick={handleCreate} disabled={!form.nombre.trim()} className="btn-primary w-full justify-center mt-2">
-            Crear y calcular costos →
+          <button onClick={handleCreate} disabled={creating || !form.nombre.trim()} className="btn-primary w-full justify-center mt-2">
+            {creating ? <><Loader2 size={14} className="animate-spin" /> Creando…</> : 'Crear y calcular costos →'}
           </button>
         </div>
       </Modal>

@@ -1,29 +1,53 @@
-import { v4 as uuidv4 } from 'uuid';
-import * as storage from './storage';
-import type { Ingrediente, IngredienteForm, RecetaIngrediente } from '../types';
-
-const KEY     = 'mdt_ingredientes';
-const KEY_RI  = 'mdt_receta_ingredientes';
+import { supabase } from '../lib/supabase';
+import type { Ingrediente, IngredienteForm } from '../types';
 
 export const ingredientesService = {
-  getAll: (): Ingrediente[] => storage.getAll<Ingrediente>(KEY),
-
-  getById: (id: string): Ingrediente | undefined => storage.getById<Ingrediente>(KEY, id),
-
-  create: (form: IngredienteForm): Ingrediente => {
-    const now = new Date().toISOString();
-    return storage.create<Ingrediente>(KEY, { ...form, id: uuidv4(), created_at: now, updated_at: now });
+  getAll: async (): Promise<Ingrediente[]> => {
+    const { data, error } = await supabase
+      .from('ingredientes')
+      .select('*')
+      .order('nombre');
+    if (error) throw error;
+    return (data ?? []) as Ingrediente[];
   },
 
-  update: (id: string, form: IngredienteForm): Ingrediente => {
-    const existing = storage.getById<Ingrediente>(KEY, id)!;
-    return storage.update<Ingrediente>(KEY, { ...existing, ...form, id, updated_at: new Date().toISOString() });
+  getById: async (id: string): Promise<Ingrediente | null> => {
+    const { data, error } = await supabase
+      .from('ingredientes')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error) throw error;
+    return data as Ingrediente;
   },
 
-  delete: (id: string): void => {
-    storage.remove<Ingrediente>(KEY, id);
-    // Cascade delete: quitar este ingrediente de todas las recetas donde aparezca
-    const lineasRestantes = storage.getAll<RecetaIngrediente>(KEY_RI).filter(ri => ri.ingrediente_id !== id);
-    localStorage.setItem(KEY_RI, JSON.stringify(lineasRestantes));
+  create: async (form: IngredienteForm): Promise<Ingrediente> => {
+    const { data, error } = await supabase
+      .from('ingredientes')
+      .insert(form)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Ingrediente;
+  },
+
+  update: async (id: string, form: IngredienteForm): Promise<Ingrediente> => {
+    const { data, error } = await supabase
+      .from('ingredientes')
+      .update(form)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Ingrediente;
+  },
+
+  // El cascade DELETE de receta_ingredientes lo maneja el FK ON DELETE CASCADE del schema SQL
+  delete: async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from('ingredientes')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
   },
 };

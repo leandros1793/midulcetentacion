@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, type ChangeEvent } from 'react';
+import { useState, useRef, useEffect, useMemo, type ChangeEvent } from 'react';
 import {
   ChefHat, Plus, Trash2, Save, Clock, Users,
   Package, TrendingUp, Calculator, ShoppingBasket,
@@ -22,19 +22,47 @@ function formatARS(n: number) {
 }
 
 export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props) {
-  const [receta, setReceta] = useState<Receta>(initial);
-  const [lineas, setLineas] = useState<RecetaIngrediente[]>(() => recetasService.getLineas(initial.id));
-  const [margen, setMargen] = useState(initial.margen_ganancia_porcentaje);
-  const [newIngId, setNewIngId] = useState('');
-  const [newCantidad, setNewCantidad] = useState('');
-  const [editingLineaId, setEditingLineaId] = useState<string | null>(null);
-  const [editingCantidad, setEditingCantidad] = useState('');
+  const [receta,   setReceta]   = useState<Receta>(initial);
+  const [lineas,   setLineas]   = useState<RecetaIngrediente[]>([]);
+  const [margen,   setMargen]   = useState(initial.margen_ganancia_porcentaje);
+  const [newIngId,      setNewIngId]      = useState('');
+  const [newCantidad,   setNewCantidad]   = useState('');
+  const [editingLineaId,   setEditingLineaId]   = useState<string | null>(null);
+  const [editingCantidad,  setEditingCantidad]  = useState('');
+  const [loadingData,  setLoadingData]  = useState(true);
+  const [addingLinea,  setAddingLinea]  = useState(false);
+  const [deletingId,   setDeletingId]   = useState<string | null>(null);
+  const [saving,       setSaving]       = useState(false);
   const [uploadingImg, setUploadingImg] = useState(false);
-  const [imgError, setImgError] = useState('');
+  const [imgError,     setImgError]     = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const ingredientes = useMemo(() => ingredientesService.getAll(), []);
-  const config = useMemo(() => configuracionService.get(), []);
+  const [ingredientes, setIngredientes] = useState<Ingrediente[]>([]);
+  const [config, setConfig] = useState({ valor_hora_trabajo: 500, costo_fijo_por_hora: 100 });
+
+  // Cargar ingredientes, líneas y config en paralelo
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoadingData(true);
+      try {
+        const [ings, lins, cfg] = await Promise.all([
+          ingredientesService.getAll(),
+          recetasService.getLineas(initial.id),
+          configuracionService.get(),
+        ]);
+        if (!cancelled) {
+          setIngredientes(ings);
+          setLineas(lins);
+          setConfig({ valor_hora_trabajo: cfg.valor_hora_trabajo, costo_fijo_por_hora: cfg.costo_fijo_por_hora });
+        }
+      } finally {
+        if (!cancelled) setLoadingData(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [initial.id]);
 
   const ingMap = useMemo(() =>
     Object.fromEntries(ingredientes.map(i => [i.id, i])),
@@ -84,25 +112,35 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
   };
 
   // ── Handlers ────────────────────────────────────────────────────────────────
-  const handleAddLinea = () => {
+  const handleAddLinea = async () => {
     if (!newIngId || !newCantidad || Number(newCantidad) <= 0) return;
-    const li = recetasService.addLinea(receta.id, {
-      ingrediente_id: newIngId,
-      cantidad_usada: Number(newCantidad),
-    });
-    setLineas(prev => [...prev, li]);
-    setNewIngId(''); setNewCantidad('');
+    setAddingLinea(true);
+    try {
+      const li = await recetasService.addLinea(receta.id, {
+        ingrediente_id: newIngId,
+        cantidad_usada: Number(newCantidad),
+      });
+      setLineas(prev => [...prev, li]);
+      setNewIngId(''); setNewCantidad('');
+    } finally {
+      setAddingLinea(false);
+    }
   };
 
-  const handleDeleteLinea = (id: string) => {
-    recetasService.deleteLinea(id);
-    setLineas(prev => prev.filter(l => l.id !== id));
+  const handleDeleteLinea = async (id: string) => {
+    setDeletingId(id);
+    try {
+      await recetasService.deleteLinea(id);
+      setLineas(prev => prev.filter(l => l.id !== id));
+    } finally {
+      setDeletingId(null);
+    }
   };
 
-  const handleUpdateLinea = (li: RecetaIngrediente) => {
+  const handleUpdateLinea = async (li: RecetaIngrediente) => {
     const val = Number(editingCantidad);
     if (val > 0) {
-      const updated = recetasService.updateLinea(li.id, {
+      const updated = await recetasService.updateLinea(li.id, {
         ingrediente_id: li.ingrediente_id,
         cantidad_usada: val,
         receta_id: li.receta_id,
@@ -113,12 +151,24 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
     setEditingCantidad('');
   };
 
-  const handleSave = () => {
-    const updated = recetasService.update(receta.id, { ...receta, margen_ganancia_porcentaje: margen });
-    onSave(updated);
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const updated = await recetasService.update(receta.id, { ...receta, margen_ganancia_porcentaje: margen });
+      onSave(updated);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const ingDisponibles = ingredientes.filter(i => !lineas.some(l => l.ingrediente_id === i.id));
+
+  if (loadingData) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+      <Loader2 size={28} className="animate-spin text-rose-300" />
+      <p className="text-sm text-stone-400">Cargando receta…</p>
+    </div>
+  );
 
   return (
     <div className="flex flex-col min-h-full">
@@ -148,8 +198,9 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
             onChange={e => setReceta(r => ({ ...r, nombre: e.target.value }))}
           />
         </div>
-        <button onClick={handleSave} className="btn-primary text-xs py-1.5 px-3">
-          <Save size={14} /> Guardar
+        <button onClick={handleSave} disabled={saving} className="btn-primary text-xs py-1.5 px-3">
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+          {saving ? 'Guardando…' : 'Guardar'}
         </button>
       </div>
 
@@ -350,9 +401,10 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
                     </div>
                     <button
                       onClick={() => handleDeleteLinea(li.id)}
-                      className="w-7 h-7 rounded-xl flex items-center justify-center text-stone-300 hover:bg-red-50 hover:text-red-400 transition-all duration-150 opacity-0 group-hover:opacity-100"
+                      disabled={deletingId === li.id}
+                      className="w-7 h-7 rounded-xl flex items-center justify-center text-stone-300 hover:bg-red-50 hover:text-red-400 transition-all duration-150 opacity-0 group-hover:opacity-100 disabled:opacity-50"
                     >
-                      <Trash2 size={13} />
+                      {deletingId === li.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
                     </button>
                   </div>
                 </div>
@@ -418,10 +470,11 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
               {/* Botón agregar */}
               <button
                 onClick={handleAddLinea}
-                disabled={!newIngId || !newCantidad || Number(newCantidad) <= 0}
+                disabled={addingLinea || !newIngId || !newCantidad || Number(newCantidad) <= 0}
                 className="w-full flex items-center justify-center gap-1.5 bg-rose-500 hover:bg-rose-600 disabled:bg-stone-200 disabled:text-stone-400 text-white font-bold text-xs py-2.5 rounded-xl transition-all duration-150"
               >
-                <Plus size={14} /> Agregar a la receta
+                {addingLinea ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                {addingLinea ? 'Agregando…' : 'Agregar a la receta'}
               </button>
 
               {ingDisponibles.length === 0 && ingredientes.length > 0 && (

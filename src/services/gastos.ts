@@ -1,26 +1,56 @@
-import { v4 as uuidv4 } from 'uuid';
-import * as storage from './storage';
+import { supabase } from '../lib/supabase';
 import type { GastoGeneral, GastoForm } from '../types';
 
-const KEY = 'mdt_gastos';
-
 export const gastosService = {
-  getAll: (): GastoGeneral[] => storage.getAll<GastoGeneral>(KEY),
-
-  create: (form: GastoForm): GastoGeneral =>
-    storage.create<GastoGeneral>(KEY, { ...form, id: uuidv4(), created_at: new Date().toISOString() }),
-
-  update: (id: string, form: GastoForm): GastoGeneral => {
-    const existing = storage.getById<GastoGeneral>(KEY, id)!;
-    return storage.update<GastoGeneral>(KEY, { ...existing, ...form, id });
+  getAll: async (): Promise<GastoGeneral[]> => {
+    const { data, error } = await supabase
+      .from('gastos')
+      .select('*')
+      .order('fecha', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as GastoGeneral[];
   },
 
-  delete: (id: string): void => storage.remove<GastoGeneral>(KEY, id),
+  create: async (form: GastoForm): Promise<GastoGeneral> => {
+    const { data, error } = await supabase
+      .from('gastos')
+      .insert(form)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as GastoGeneral;
+  },
 
-  getDelMes: (year: number, month: number): GastoGeneral[] =>
-    storage.getAll<GastoGeneral>(KEY).filter(g => {
-      // Forzar mediodía local para evitar bugs de timezone (UTC-3 en Argentina)
-      const d = new Date(g.fecha + 'T12:00:00');
-      return d.getFullYear() === year && d.getMonth() === month;
-    }),
+  update: async (id: string, form: GastoForm): Promise<GastoGeneral> => {
+    const { data, error } = await supabase
+      .from('gastos')
+      .update(form)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as GastoGeneral;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from('gastos')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  /** month es 0-indexed (igual que Date.getMonth()) */
+  getDelMes: async (year: number, month: number): Promise<GastoGeneral[]> => {
+    const m        = month + 1;
+    const firstDay = `${year}-${String(m).padStart(2, '0')}-01`;
+    const lastDay  = new Date(year, m, 0).toISOString().split('T')[0]; // último día del mes
+    const { data, error } = await supabase
+      .from('gastos')
+      .select('*')
+      .gte('fecha', firstDay)
+      .lte('fecha', lastDay);
+    if (error) throw error;
+    return (data ?? []) as GastoGeneral[];
+  },
 };

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, ShoppingBasket, Trash2, Edit2, Search, ChefHat, ShoppingCart, Sparkles } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Plus, ShoppingBasket, Trash2, Edit2, Search, ChefHat, ShoppingCart, Sparkles, Loader2 } from 'lucide-react';
 import { ingredientesService } from '../../services';
 import {
   calcCostoPorUnidadReceta,
@@ -19,10 +19,6 @@ const CATEGORIAS: CategoriaIngrediente[] = [
 
 const UNIDADES_COMPRA: UnidadCompra[] = ['Kg', 'Litro', 'Unidad'];
 
-/**
- * Mapeo completo compra → receta + factor de conversión.
- * El usuario NUNCA escribe el factor — el sistema lo deduce de las unidades.
- */
 const UNIT_MAP: Record<UnidadCompra, { receta: UnidadReceta; factor: number; hint: string }> = {
   Kg:     { receta: 'Gramos',     factor: 1000, hint: '1 Kg = 1.000 gramos' },
   Litro:  { receta: 'Mililitros', factor: 1000, hint: '1 Litro = 1.000 mililitros' },
@@ -66,20 +62,30 @@ function singularUnit(u: string): string {
 // ── Componente ────────────────────────────────────────────────────────────────
 
 export default function IngredientesPage() {
-  const [ingredientes, setIngredientes] = useState<Ingrediente[]>(() => ingredientesService.getAll());
+  const [ingredientes, setIngredientes] = useState<Ingrediente[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [saving,   setSaving]   = useState(false);
   const [query,    setQuery]    = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editing,  setEditing]  = useState<Ingrediente | null>(null);
   const [form,     setForm]     = useState<IngredienteForm>(DEFAULT_FORM);
   const [delId,    setDelId]    = useState<string | null>(null);
 
-  const refresh = () => setIngredientes(ingredientesService.getAll());
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      setIngredientes(await ingredientesService.getAll());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { refresh(); }, [refresh]);
 
   const openNew = () => { setEditing(null); setForm(DEFAULT_FORM); setShowForm(true); };
 
   const openEdit = (ing: Ingrediente) => {
     setEditing(ing);
-    // Re-derivamos factor desde las unidades para garantizar consistencia
     const { factor, receta } = UNIT_MAP[ing.unidad_medida_compra];
     setForm({
       nombre:               ing.nombre,
@@ -95,28 +101,35 @@ export default function IngredientesPage() {
     setShowForm(true);
   };
 
-  /** Cuando cambia la unidad de compra, actualizamos receta + factor automáticamente */
   const handleUnidadCompraChange = (u: UnidadCompra) => {
     const { receta, factor } = UNIT_MAP[u];
     setForm(f => ({ ...f, unidad_medida_compra: u, unidad_medida_receta: receta, factor_conversion: factor }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.nombre.trim()) return;
-    if (editing) ingredientesService.update(editing.id, form);
-    else         ingredientesService.create(form);
-    refresh();
-    setShowForm(false);
+    setSaving(true);
+    try {
+      if (editing) await ingredientesService.update(editing.id, form);
+      else         await ingredientesService.create(form);
+      await refresh();
+      setShowForm(false);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDelete = (id: string) => { ingredientesService.delete(id); refresh(); setDelId(null); };
+  const handleDelete = async (id: string) => {
+    await ingredientesService.delete(id);
+    await refresh();
+    setDelId(null);
+  };
 
   const filtered = ingredientes.filter(i =>
     i.nombre.toLowerCase().includes(query.toLowerCase()) ||
     i.categoria.toLowerCase().includes(query.toLowerCase())
   );
 
-  // Datos del mapeo actual para el preview
   const unitInfo    = UNIT_MAP[form.unidad_medida_compra];
   const costoPreview =
     form.precio_compra > 0 && form.cantidad_empaque > 0
@@ -147,7 +160,11 @@ export default function IngredientesPage() {
       )}
 
       {/* Lista */}
-      {filtered.length === 0 && ingredientes.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 size={24} className="animate-spin text-rose-300" />
+        </div>
+      ) : filtered.length === 0 && ingredientes.length === 0 ? (
         <EmptyState icon={ShoppingBasket} title="Sin ingredientes"
           description="Agregá tu primera materia prima para empezar a costear."
           action={{ label: '+ Agregar ingrediente', onClick: openNew }} />
@@ -193,8 +210,6 @@ export default function IngredientesPage() {
         title={editing ? 'Editar ingrediente' : 'Nuevo ingrediente'}
       >
         <div className="space-y-5">
-
-          {/* Nombre + Categoría + Proveedor */}
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <label className="label">Nombre del ingrediente *</label>
@@ -222,7 +237,7 @@ export default function IngredientesPage() {
 
           <div className="h-px bg-stone-100" />
 
-          {/* ── Sección 1: ¿Cuánto pagaste? ── */}
+          {/* Sección 1: ¿Cuánto pagaste? */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-6 h-6 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
@@ -232,38 +247,25 @@ export default function IngredientesPage() {
                 ¿Cuánto pagaste y qué compraste?
               </p>
             </div>
-
             <div className="bg-amber-50/60 border border-amber-100 rounded-2xl p-4 space-y-3">
-              {/* Frase conversacional: "Pagué $X por Y Kg" */}
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-semibold text-stone-500">Pagué</span>
-
-                {/* Precio */}
                 <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400 text-sm font-bold pointer-events-none">
-                    $
-                  </span>
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400 text-sm font-bold pointer-events-none">$</span>
                   <input
-                    type="number" min="0" step="any"
-                    placeholder="1500"
+                    type="number" min="0" step="any" placeholder="1500"
                     className="input pl-6 w-28 text-sm"
                     value={form.precio_compra || ''}
                     onChange={e => setForm(f => ({ ...f, precio_compra: Number(e.target.value) }))}
                   />
                 </div>
-
                 <span className="text-sm font-semibold text-stone-500">por</span>
-
-                {/* Cantidad de empaque */}
                 <input
-                  type="number" min="0.01" step="any"
-                  placeholder="1"
+                  type="number" min="0.01" step="any" placeholder="1"
                   className="input w-20 text-sm text-center"
                   value={form.cantidad_empaque || ''}
                   onChange={e => setForm(f => ({ ...f, cantidad_empaque: Number(e.target.value) }))}
                 />
-
-                {/* Unidad de compra */}
                 <select
                   className="input w-28 text-sm font-semibold text-stone-700"
                   value={form.unidad_medida_compra}
@@ -272,8 +274,6 @@ export default function IngredientesPage() {
                   {UNIDADES_COMPRA.map(u => <option key={u} value={u}>{u}</option>)}
                 </select>
               </div>
-
-              {/* Ejemplo contextual */}
               {form.precio_compra > 0 && form.cantidad_empaque > 0 && (
                 <p className="text-[11px] text-amber-700 bg-white/70 rounded-xl px-3 py-1.5 border border-amber-100">
                   💡 Compraste <strong>{form.cantidad_empaque} {form.unidad_medida_compra}</strong>{' '}
@@ -284,7 +284,7 @@ export default function IngredientesPage() {
             </div>
           </div>
 
-          {/* ── Sección 2: ¿Cómo lo medís en la cocina? ── */}
+          {/* Sección 2: ¿Cómo lo medís? */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-6 h-6 bg-rose-100 rounded-lg flex items-center justify-center shrink-0">
@@ -294,20 +294,14 @@ export default function IngredientesPage() {
                 ¿Cómo lo medís en la cocina?
               </p>
             </div>
-
             <div className="bg-stone-50 border border-stone-100 rounded-2xl p-4">
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="text-sm text-stone-500 font-medium">Lo vas a medir en</span>
-
-                {/* Badge de unidad — auto-calculado, solo visual */}
                 <span className="inline-flex items-center gap-1.5 bg-white border-2 border-rose-200 text-rose-600 font-extrabold text-sm px-3 py-1.5 rounded-xl shadow-sm">
                   {form.unidad_medida_receta}
                 </span>
-
                 <span className="text-sm text-stone-400 font-medium">en tus recetas</span>
               </div>
-
-              {/* Explicación del factor */}
               <p className="text-[11px] text-stone-400 mt-2.5 flex items-center gap-1.5">
                 <span className="text-stone-300">↳</span>
                 {unitInfo.hint} · el sistema convierte automáticamente
@@ -315,7 +309,7 @@ export default function IngredientesPage() {
             </div>
           </div>
 
-          {/* ── Sección 3: Desperdicio (Merma) ── */}
+          {/* Sección 3: Desperdicio */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-6 h-6 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
@@ -325,7 +319,6 @@ export default function IngredientesPage() {
                 Desperdicio o Merma <span className="text-stone-400 normal-case font-normal">(opcional)</span>
               </p>
             </div>
-
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <input
@@ -344,12 +337,12 @@ export default function IngredientesPage() {
               </div>
               <p className="text-[11px] text-stone-400 leading-relaxed">
                 Ej: si comprás frutillas y les quitás el cabito, perdés aprox. un 5% del peso.
-                Si usás el azúcar o la harina al 100%, dejalo en <strong>0</strong>.
+                Si usás el 100%, dejalo en <strong>0</strong>.
               </p>
             </div>
           </div>
 
-          {/* ── Preview del costo calculado ── */}
+          {/* Preview del costo */}
           {costoPreview !== null && (
             <div className="bg-gradient-to-br from-rose-50 to-amber-50 rounded-2xl p-4 border border-rose-100">
               <div className="flex items-center gap-2 mb-2">
@@ -374,13 +367,12 @@ export default function IngredientesPage() {
             </div>
           )}
 
-          {/* Botón submit */}
           <button
             onClick={handleSubmit}
-            disabled={!form.nombre.trim() || !form.precio_compra || !form.cantidad_empaque}
+            disabled={saving || !form.nombre.trim() || !form.precio_compra || !form.cantidad_empaque}
             className="btn-primary w-full justify-center"
           >
-            {editing ? 'Guardar cambios' : 'Crear ingrediente'}
+            {saving ? <><Loader2 size={14} className="animate-spin" /> Guardando…</> : (editing ? 'Guardar cambios' : 'Crear ingrediente')}
           </button>
         </div>
       </Modal>

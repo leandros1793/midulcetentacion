@@ -78,6 +78,20 @@ export interface CostosReceta {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+export interface Promocion {
+  id: string;
+  titulo: string;
+  descripcion?: string;
+  precio_promocional: number;
+  imagen_url: string;
+  activa: boolean;
+  created_at: string;
+}
+
+export type PromocionForm = Omit<Promocion, 'id' | 'created_at'>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export interface GastoGeneral {
   id: string;
   descripcion: string;

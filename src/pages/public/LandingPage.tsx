@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Clock, Star, Heart, Sparkles } from 'lucide-react';
-import { ingredientesService, recetasService, configuracionService } from '../../services';
+import { ShoppingBag, Clock, Star, Heart, Sparkles, Flame, Tag } from 'lucide-react';
+import { ingredientesService, recetasService, configuracionService, promocionesService } from '../../services';
 import { calcCostoLinea } from '../../types';
-import type { Receta } from '../../types';
+import type { Receta, Promocion } from '../../types';
 
 // ── WhatsApp SVG Icon ─────────────────────────────────────────────────────────
 function WhatsAppIcon({ size = 20 }: { size?: number }) {
@@ -38,8 +38,13 @@ interface ProductoConPrecio extends Receta {
 // ── Componente principal ──────────────────────────────────────────────────────
 export default function LandingPage() {
   const [productos, setProductos] = useState<ProductoConPrecio[]>([]);
+  const [promos, setPromos]       = useState<Promocion[]>([]);
   const config = useMemo(() => configuracionService.get(), []);
   const whatsappNumero = config.whatsapp_numero ?? '5493512476048';
+
+  useEffect(() => {
+    setPromos(promocionesService.getActivas());
+  }, []);
 
   useEffect(() => {
     const ingredientes = ingredientesService.getAll();
@@ -148,6 +153,38 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Promociones Especiales ───────────────────────────────────────────── */}
+      {promos.length > 0 && (
+        <section className="py-10 px-5 bg-gradient-to-b from-amber-50/60 to-rose-50/30">
+          <div className="max-w-sm mx-auto">
+
+            {/* Header sección */}
+            <div className="flex items-center gap-2 mb-6">
+              <span className="flex items-center justify-center w-8 h-8 bg-rose-500 rounded-xl shadow-sm shadow-rose-200">
+                <Flame size={15} className="text-white" />
+              </span>
+              <div>
+                <h2 className="text-base font-extrabold text-stone-800 tracking-tight leading-none">
+                  Promociones Especiales
+                </h2>
+                <p className="text-[11px] text-stone-400 mt-0.5">Ofertas por tiempo limitado 🎉</p>
+              </div>
+            </div>
+
+            {/* Cards de promos */}
+            <div className="flex flex-col gap-5">
+              {promos.map(promo => (
+                <PromoCard
+                  key={promo.id}
+                  promo={promo}
+                  whatsappNumero={whatsappNumero}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── Propuesta de valor ────────────────────────────────────────────────── */}
       <section className="py-10 px-5">
         <div className="max-w-sm mx-auto grid grid-cols-3 gap-3">
@@ -246,6 +283,67 @@ export default function LandingPage() {
         <p className="text-xs text-stone-300 mt-1.5">Belu: 351 247-6048 · Flor: 351 221-7870</p>
       </footer>
 
+    </div>
+  );
+}
+
+// ── PromoCard (Landing) ───────────────────────────────────────────────────────
+function PromoCard({ promo, whatsappNumero }: { promo: Promocion; whatsappNumero: string }) {
+  const texto = encodeURIComponent(
+    `¡Hola! 🎉 Vi la promo de *${promo.titulo}* y me gustaría pedirla. ¿Está disponible?`
+  );
+  const waUrl = `https://wa.me/${whatsappNumero}?text=${texto}`;
+
+  return (
+    <div className="group bg-white rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgb(0,0,0,0.12)]">
+
+      {/* Imagen protagonista */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-rose-50 to-amber-50">
+        <img
+          src={promo.imagen_url}
+          alt={promo.titulo}
+          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+          onError={e => {
+            (e.currentTarget as HTMLImageElement).style.display = 'none';
+          }}
+        />
+        {/* Badge "Promo" */}
+        <div className="absolute top-3 left-3">
+          <span className="inline-flex items-center gap-1 bg-rose-500 text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-md shadow-rose-300/50 tracking-wide uppercase">
+            <Flame size={9} /> Promo
+          </span>
+        </div>
+      </div>
+
+      {/* Info */}
+      <div className="p-5">
+        <h3 className="font-extrabold text-stone-800 text-lg tracking-tight leading-tight mb-1">
+          {promo.titulo}
+        </h3>
+        {promo.descripcion && (
+          <p className="text-sm text-stone-400 mb-3 leading-relaxed">{promo.descripcion}</p>
+        )}
+
+        <div className="flex items-center justify-between mt-3">
+          <div>
+            <p className="text-[9px] text-stone-400 uppercase tracking-widest font-semibold mb-0.5 flex items-center gap-1">
+              <Tag size={8} /> Precio especial
+            </p>
+            <p className="text-2xl font-extrabold text-rose-500 tracking-tight">
+              {formatARS(promo.precio_promocional)}
+            </p>
+          </div>
+
+          <a
+            href={waUrl}
+            target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-extrabold text-sm py-3 px-5 rounded-2xl transition-all duration-200 shadow-md shadow-green-200/80 hover:-translate-y-0.5 hover:shadow-green-300/80"
+          >
+            <WhatsAppIcon size={16} />
+            <span>¡La quiero!</span>
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

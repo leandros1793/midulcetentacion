@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingBasket, BookOpen,
-  Receipt, Settings, ChefHat, LogOut,
+  Settings, ChefHat, LogOut, Megaphone,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -9,7 +9,7 @@ const NAV = [
   { to: '/dashboard',               icon: LayoutDashboard, label: 'Inicio'       },
   { to: '/dashboard/ingredientes',  icon: ShoppingBasket,  label: 'Ingredientes' },
   { to: '/dashboard/recetas',       icon: BookOpen,        label: 'Recetas'      },
-  { to: '/dashboard/gastos',        icon: Receipt,         label: 'Gastos'       },
+  { to: '/dashboard/promociones',   icon: Megaphone,       label: 'Promos'       },
   { to: '/dashboard/configuracion', icon: Settings,        label: 'Config'       },
 ];
 

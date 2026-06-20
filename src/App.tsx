@@ -15,6 +15,7 @@ import IngredientesPage   from './pages/ingredientes/IngredientesPage';
 import RecetasPage        from './pages/recetas/RecetasPage';
 import GastosPage         from './pages/gastos/GastosPage';
 import ConfiguracionPage  from './pages/configuracion/ConfiguracionPage';
+import PromocionesPage    from './pages/promociones/PromocionesPage';
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
               <Route path="recetas"          element={<RecetasPage />} />
               <Route path="gastos"           element={<GastosPage />} />
               <Route path="configuracion"    element={<ConfiguracionPage />} />
+              <Route path="promociones"      element={<PromocionesPage />} />
             </Route>
           </Route>
 

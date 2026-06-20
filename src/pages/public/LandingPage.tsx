@@ -304,41 +304,13 @@ export default function LandingPage() {
               </a>
             </div>
 
-            {/* Grilla de destacados */}
+            {/* Grilla de destacados con preview real via Microlink */}
             {(config.instagram_destacados ?? []).some(u => u?.trim()) && (
               <div className="grid grid-cols-3 gap-3">
                 {[0, 1, 2].map(i => {
                   const url = config.instagram_destacados?.[i]?.trim();
                   if (!url) return null;
-                  return (
-                    <a
-                      key={i}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group block bg-white rounded-2xl overflow-hidden shadow-[0_4px_16px_rgb(0,0,0,0.07)] border border-stone-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgb(0,0,0,0.12)]"
-                    >
-                      {/* Imagen simulada con gradiente IG */}
-                      <div
-                        className="aspect-square flex flex-col items-center justify-center gap-1.5 relative overflow-hidden"
-                        style={{ background: 'linear-gradient(135deg, rgba(240,148,51,0.15), rgba(220,39,67,0.15), rgba(188,24,136,0.15))' }}
-                      >
-                        <div
-                          className="w-8 h-8 rounded-xl flex items-center justify-center"
-                          style={{ background: 'linear-gradient(135deg, #f09433, #dc2743, #bc1888)' }}
-                        >
-                          <Instagram size={16} className="text-white" />
-                        </div>
-                        <ExternalLink size={10} className="text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-2 right-2" />
-                      </div>
-                      {/* Label */}
-                      <div className="px-2 py-2 text-center">
-                        <p className="text-[9px] font-bold text-stone-500 uppercase tracking-wide leading-tight">
-                          Ver post
-                        </p>
-                      </div>
-                    </a>
-                  );
+                  return <IgPostCard key={i} url={url} />;
                 })}
               </div>
             )}
@@ -363,6 +335,89 @@ export default function LandingPage() {
       </footer>
 
     </div>
+  );
+}
+
+// ── IgPostCard (preview real via Microlink API) ───────────────────────────────
+function IgPostCard({ url }: { url: string }) {
+  const [imgSrc, setImgSrc]   = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(false);
+
+  useEffect(() => {
+    if (!url) return;
+    setLoading(true);
+    setError(false);
+    setImgSrc(null);
+
+    fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}`)
+      .then(r => r.json())
+      .then((data) => {
+        const image = data?.data?.image?.url as string | undefined;
+        if (image) {
+          setImgSrc(image);
+        } else {
+          setError(true);
+        }
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [url]);
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group block bg-white rounded-2xl overflow-hidden shadow-[0_4px_16px_rgb(0,0,0,0.07)] border border-stone-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgb(0,0,0,0.12)]"
+    >
+      <div className="aspect-square relative overflow-hidden bg-stone-50">
+
+        {/* Skeleton mientras carga */}
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, rgba(240,148,51,0.08), rgba(220,39,67,0.08), rgba(188,24,136,0.08))' }}>
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center animate-pulse"
+              style={{ background: 'linear-gradient(135deg, #f09433, #dc2743, #bc1888)' }}>
+              <Instagram size={16} className="text-white" />
+            </div>
+          </div>
+        )}
+
+        {/* Thumbnail real */}
+        {!loading && imgSrc && (
+          <img
+            src={imgSrc}
+            alt="Post de Instagram"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        )}
+
+        {/* Fallback gradiente si falla la API */}
+        {!loading && (error || !imgSrc) && (
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-1.5"
+            style={{ background: 'linear-gradient(135deg, rgba(240,148,51,0.15), rgba(220,39,67,0.15), rgba(188,24,136,0.15))' }}
+          >
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #f09433, #dc2743, #bc1888)' }}>
+              <Instagram size={16} className="text-white" />
+            </div>
+          </div>
+        )}
+
+        {/* Ícono external link al hover */}
+        <ExternalLink
+          size={10}
+          className="absolute bottom-2 right-2 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow"
+        />
+      </div>
+      <div className="px-2 py-2 text-center">
+        <p className="text-[9px] font-bold text-stone-500 uppercase tracking-wide leading-tight">
+          Ver post
+        </p>
+      </div>
+    </a>
   );
 }
 

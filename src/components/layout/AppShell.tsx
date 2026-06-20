@@ -14,7 +14,7 @@ const NAV = [
 ];
 
 export default function AppShell() {
-  const location = useLocation();
+  const location  = useLocation();
   const navigate  = useNavigate();
   const { signOut } = useAuth();
 
@@ -27,22 +27,23 @@ export default function AppShell() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-warm-50 max-w-md mx-auto relative">
+    <div className="min-h-screen flex flex-col bg-stone-50 max-w-md mx-auto relative">
+
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-white border-b border-warm-100 shadow-sm px-4 py-3 flex items-center gap-3">
-        <div className="bg-rose-500 rounded-xl p-1.5">
+      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-stone-100 shadow-[0_1px_12px_rgb(0,0,0,0.04)] px-4 py-3 flex items-center gap-3">
+        <div className="bg-rose-500 rounded-2xl p-1.5 shadow-sm shadow-rose-200">
           <ChefHat size={18} className="text-white" />
         </div>
-        <div className="flex-1">
-          <p className="text-xs text-rose-400 font-medium leading-none">Mi Dulce Tentación</p>
-          <h1 className="text-sm font-bold text-gray-800">{current}</h1>
+        <div className="flex-1 min-w-0">
+          <p className="text-[9px] text-rose-400 font-semibold tracking-widest uppercase leading-none">Mi Dulce Tentación</p>
+          <h1 className="text-sm font-bold text-stone-800 tracking-tight truncate">{current}</h1>
         </div>
         <button
           onClick={handleLogout}
           title="Cerrar sesión"
-          className="text-gray-300 hover:text-rose-500 transition-colors p-1"
+          className="text-stone-300 hover:text-rose-500 transition-all duration-200 p-1.5 rounded-xl hover:bg-rose-50"
         >
-          <LogOut size={18} />
+          <LogOut size={17} />
         </button>
       </header>
 
@@ -52,20 +53,26 @@ export default function AppShell() {
       </main>
 
       {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-warm-100 z-30 flex">
+      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/90 backdrop-blur-xl border-t border-stone-100 z-30 flex shadow-[0_-4px_20px_rgb(0,0,0,0.06)]">
         {NAV.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/dashboard'}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition-colors ${
-                isActive ? 'text-rose-500' : 'text-gray-400 hover:text-gray-600'
+              `flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold transition-all duration-200 ${
+                isActive ? 'text-rose-500' : 'text-stone-400 hover:text-stone-600'
               }`
             }
           >
-            <Icon size={20} strokeWidth={1.8} />
-            {label}
+            {({ isActive }) => (
+              <>
+                <span className={`p-1 rounded-xl transition-all duration-200 ${isActive ? 'bg-rose-50' : ''}`}>
+                  <Icon size={19} strokeWidth={isActive ? 2.2 : 1.7} />
+                </span>
+                {label}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

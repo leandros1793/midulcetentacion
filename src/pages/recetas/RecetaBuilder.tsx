@@ -27,6 +27,8 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
   const [margen, setMargen] = useState(initial.margen_ganancia_porcentaje);
   const [newIngId, setNewIngId] = useState('');
   const [newCantidad, setNewCantidad] = useState('');
+  const [editingLineaId, setEditingLineaId] = useState<string | null>(null);
+  const [editingCantidad, setEditingCantidad] = useState('');
   const [uploadingImg, setUploadingImg] = useState(false);
   const [imgError, setImgError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -97,6 +99,20 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
     setLineas(prev => prev.filter(l => l.id !== id));
   };
 
+  const handleUpdateLinea = (li: RecetaIngrediente) => {
+    const val = Number(editingCantidad);
+    if (val > 0) {
+      const updated = recetasService.updateLinea(li.id, {
+        ingrediente_id: li.ingrediente_id,
+        cantidad_usada: val,
+        receta_id: li.receta_id,
+      });
+      setLineas(prev => prev.map(l => l.id === li.id ? updated : l));
+    }
+    setEditingLineaId(null);
+    setEditingCantidad('');
+  };
+
   const handleSave = () => {
     const updated = recetasService.update(receta.id, { ...receta, margen_ganancia_porcentaje: margen });
     onSave(updated);
@@ -115,6 +131,7 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
               receta.tiempo_prep_minutos !== initial.tiempo_prep_minutos ||
               receta.rinde_porciones !== initial.rinde_porciones ||
               receta.costo_packaging_fijo !== initial.costo_packaging_fijo ||
+              (receta.notas ?? '') !== (initial.notas ?? '') ||
               margen !== initial.margen_ganancia_porcentaje;
             if (hayDirty && !window.confirm('¿Salir sin guardar los cambios?')) return;
             onBack();
@@ -165,7 +182,7 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
               </div>
             </div>
             <div>
-              <label className="label">Empaque</label>
+              <label className="label">Empaque $</label>
               <div className="relative">
                 <Package size={14} className="absolute left-2.5 top-2.5 text-gray-300" />
                 <input type="number" min="0" className="input pl-8"
@@ -174,6 +191,17 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
                 />
               </div>
             </div>
+          </div>
+          {/* Notas */}
+          <div className="mt-3">
+            <label className="label">Notas</label>
+            <textarea
+              className="input resize-none text-sm"
+              rows={2}
+              placeholder="Consejos de preparación, variantes, temperaturas…"
+              value={receta.notas ?? ''}
+              onChange={e => setReceta(r => ({ ...r, notas: e.target.value }))}
+            />
           </div>
         </div>
 
@@ -280,9 +308,31 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
                       {ing.nombre}
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[10px] font-medium text-stone-500 bg-white px-1.5 py-0.5 rounded-md border border-stone-100">
-                        {li.cantidad_usada} {ing.unidad_medida_receta.toLowerCase()}
-                      </span>
+                      {/* Cantidad — toque para editar inline */}
+                      {editingLineaId === li.id ? (
+                        <input
+                          autoFocus
+                          type="number"
+                          min="0.01"
+                          step="any"
+                          className="w-24 text-xs text-center border border-rose-300 rounded-md px-1.5 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-rose-300"
+                          value={editingCantidad}
+                          onChange={e => setEditingCantidad(e.target.value)}
+                          onBlur={() => handleUpdateLinea(li)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter')  handleUpdateLinea(li);
+                            if (e.key === 'Escape') { setEditingLineaId(null); setEditingCantidad(''); }
+                          }}
+                        />
+                      ) : (
+                        <button
+                          onClick={() => { setEditingLineaId(li.id); setEditingCantidad(String(li.cantidad_usada)); }}
+                          title="Tocar para editar cantidad"
+                          className="text-[10px] font-medium text-stone-500 bg-white px-1.5 py-0.5 rounded-md border border-stone-100 hover:border-rose-300 hover:text-rose-500 transition-colors"
+                        >
+                          {li.cantidad_usada} {ing.unidad_medida_receta.toLowerCase()}
+                        </button>
+                      )}
                       <span className="text-[10px] text-stone-300">·</span>
                       <span className="text-[10px] text-stone-400">
                         {formatARS(calcCostoPorUnidadReceta(ing))}/u

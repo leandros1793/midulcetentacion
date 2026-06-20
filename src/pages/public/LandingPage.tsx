@@ -1,6 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, MessageCircle, Clock, Star, Heart, Sparkles, Truck } from 'lucide-react';
+import { ShoppingBag, Clock, Star, Heart, Sparkles, Truck } from 'lucide-react';
+
+// ── WhatsApp SVG Icon ─────────────────────────────────────────────────────────
+function WhatsAppIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12.001 2C6.479 2 2.001 6.478 2.001 12c0 1.946.537 3.769 1.47 5.33L2 22l4.797-1.438A9.957 9.957 0 0 0 12.001 22c5.522 0 10-4.478 10-10S17.523 2 12.001 2Zm0 18c-1.71 0-3.305-.47-4.67-1.285l-.334-.2-3.464 1.038 1.07-3.36-.218-.346A7.948 7.948 0 0 1 4.001 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8Zm4.39-5.847c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.013-.373-1.93-1.19-.713-.636-1.194-1.422-1.334-1.662-.14-.24-.015-.37.105-.49.108-.107.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.195-.468-.393-.404-.54-.412l-.46-.008c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.693 2.585 4.103 3.623.574.247 1.02.395 1.37.506.576.183 1.1.157 1.514.095.462-.069 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28Z"/>
+    </svg>
+  );
+}
 import { ingredientesService, recetasService, configuracionService } from '../../services';
 import { calcCostoLinea } from '../../types';
 import type { Receta } from '../../types';
@@ -77,7 +86,7 @@ export default function LandingPage() {
             target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-full transition-all duration-200 shadow-sm shadow-emerald-200"
           >
-            <MessageCircle size={13} /> WhatsApp
+            <WhatsAppIcon size={13} /> WhatsApp
           </a>
           <Link to="/login" className="text-xs text-stone-400 hover:text-rose-500 transition-colors px-2 py-2">
             Panel →
@@ -127,7 +136,7 @@ export default function LandingPage() {
               target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-50 text-stone-700 font-semibold text-sm py-3.5 px-7 rounded-full transition-all duration-300 border border-stone-200 shadow-sm hover:-translate-y-0.5"
             >
-              <MessageCircle size={16} className="text-emerald-500" /> Pedir ahora
+              <WhatsAppIcon size={16} /> Pedir ahora
             </a>
           </div>
         </div>
@@ -190,17 +199,17 @@ export default function LandingPage() {
             <a
               href={`https://wa.me/${config.whatsapp_numero ?? '5493512476048'}`}
               target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3.5 px-6 rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-emerald-900/30"
+              className="inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3.5 px-7 rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-emerald-900/30 text-sm"
             >
-              <MessageCircle size={17} /> {config.nombre_contacto_1 ?? 'Belu'}
+              <WhatsAppIcon size={18} /> {config.nombre_contacto_1 ?? 'Belu'}
             </a>
             {config.whatsapp_numero_2 && (
               <a
                 href={`https://wa.me/${config.whatsapp_numero_2}`}
                 target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3.5 px-6 rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-emerald-900/30"
+                className="inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3.5 px-7 rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-emerald-900/30 text-sm"
               >
-                <MessageCircle size={17} /> {config.nombre_contacto_2 ?? 'Flor'}
+                <WhatsAppIcon size={18} /> {config.nombre_contacto_2 ?? 'Flor'}
               </a>
             )}
           </div>
@@ -277,7 +286,7 @@ function ProductCard({ producto, whatsappNumero }: {
             target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-full transition-all duration-200 shadow-sm shadow-emerald-200 hover:shadow-emerald-300 hover:-translate-y-0.5 whitespace-nowrap"
           >
-            <MessageCircle size={13} /> Pedir
+            <WhatsAppIcon size={13} /> Pedir
           </a>
         </div>
       </div>

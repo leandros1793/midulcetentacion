@@ -1,8 +1,8 @@
 import { useState, useMemo, useRef, type ChangeEvent } from 'react';
 import {
   ChefHat, Plus, Trash2, Save, Clock, Users,
-  Package, Zap, TrendingUp, DollarSign, Calculator,
-  ArrowLeft, Info, ImagePlus, Loader2,
+  Package, TrendingUp, Calculator,
+  ArrowLeft, Info, ImagePlus, Loader2, Receipt,
 } from 'lucide-react';
 import { ingredientesService, recetasService, configuracionService } from '../../services';
 import { uploadProductImage } from '../../services/supabase/uploadImage';
@@ -305,90 +305,175 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
           )}
         </div>
 
-        {/* Desglose de costos */}
-        <div className="card">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-            <Zap size={13} /> Costos operativos
-          </h3>
-          <div className="space-y-2">
-            <CostoRow label="Mano de obra" hint={`${receta.tiempo_prep_minutos} min × ${formatARS(config.valor_hora_trabajo)}/h`} value={costos.costoMO} />
-            <CostoRow label="Costos fijos" hint={`${receta.tiempo_prep_minutos} min × ${formatARS(config.costo_fijo_por_hora)}/h`} value={costos.costoFijo} />
-            <CostoRow label="Empaque" hint="cajas, bases, decoración" value={costos.costoPackaging} />
-            <div className="flex justify-between items-center pt-2 mt-2 border-t border-warm-100">
-              <span className="text-sm font-bold text-gray-700">Costo total</span>
-              <span className="text-base font-bold text-gray-900">{formatARS(costos.costoTotal)}</span>
-            </div>
-            <div className="flex justify-between items-center text-xs text-gray-400">
-              <span>Por porción</span>
-              <span>{formatARS(costos.costoPorcion)}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Calculadora de precio */}
-        <div className="card bg-gradient-to-br from-rose-50 to-blush-50 border-rose-200">
-          <h3 className="text-xs font-semibold text-rose-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-            <TrendingUp size={13} /> Precio de venta
-          </h3>
-
-          {/* Slider margen */}
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-1.5">
-              <label className="text-xs text-gray-500 font-medium">Margen de Ganancia</label>
-              <span className="text-base font-bold text-rose-600">{margen}%</span>
-            </div>
-            <input
-              type="range" min="50" max="400" step="5"
-              value={margen}
-              onChange={e => setMargen(Number(e.target.value))}
-              className="w-full accent-rose-500"
-            />
-            <div className="flex justify-between text-xs text-gray-300 mt-1">
-              <span>50%</span><span>150%</span><span>250%</span><span>400%</span>
-            </div>
-          </div>
-
-          {/* Resultados */}
-          <div className="bg-white rounded-xl p-3 space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-400">Precio total</span>
-              <span className="text-xl font-black text-rose-600">{formatARS(costos.precioVenta)}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-400">Por porción</span>
-              <span className="text-sm font-bold text-rose-500">{formatARS(costos.precioPorPorcion)}</span>
-            </div>
-            <div className="h-px bg-warm-100" />
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-400 flex items-center gap-1">
-                <DollarSign size={11} /> Ganancia neta
-              </span>
-              <span className={`text-sm font-bold ${costos.gananciaTotal >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                {formatARS(costos.gananciaTotal)}
-              </span>
-            </div>
-          </div>
-
-          {/* Info config */}
-          <p className="text-xs text-rose-300 flex items-center gap-1 mt-2">
-            <Info size={11} />
-            Hora trabajo: {formatARS(config.valor_hora_trabajo)} · Costo fijo/h: {formatARS(config.costo_fijo_por_hora)}
-          </p>
-        </div>
+        {/* ── Tarjeta de Desglose de Costos ──────────────────────────────── */}
+        <CostBreakdownCard
+          costoIng={costos.costoIng}
+          costoMO={costos.costoMO}
+          costoFijo={costos.costoFijo}
+          costoPackaging={costos.costoPackaging}
+          costoTotal={costos.costoTotal}
+          precioVenta={costos.precioVenta}
+          gananciaTotal={costos.gananciaTotal}
+          precioPorPorcion={costos.precioPorPorcion}
+          costoPorcion={costos.costoPorcion}
+          margen={margen}
+          onMargenChange={setMargen}
+          tiempo={receta.tiempo_prep_minutos}
+          porciones={receta.rinde_porciones}
+          valorHora={config.valor_hora_trabajo}
+          costoFijoHora={config.costo_fijo_por_hora}
+        />
 
       </div>
     </div>
   );
 }
 
-function CostoRow({ label, hint, value }: { label: string; hint: string; value: number }) {
+// ── CostBreakdownCard ─────────────────────────────────────────────────────────
+function CostBreakdownCard({
+  costoIng, costoMO, costoFijo, costoPackaging, costoTotal,
+  precioVenta, gananciaTotal, precioPorPorcion, costoPorcion,
+  margen, onMargenChange,
+  tiempo, porciones, valorHora, costoFijoHora,
+}: {
+  costoIng: number; costoMO: number; costoFijo: number; costoPackaging: number;
+  costoTotal: number; precioVenta: number; gananciaTotal: number;
+  precioPorPorcion: number; costoPorcion: number;
+  margen: number; onMargenChange: (v: number) => void;
+  tiempo: number; porciones: number; valorHora: number; costoFijoHora: number;
+}) {
   return (
-    <div className="flex justify-between items-center">
-      <div>
-        <p className="text-xs font-medium text-gray-600">{label}</p>
-        <p className="text-xs text-gray-400">{hint}</p>
+    <div className="bg-amber-50/50 rounded-2xl border border-amber-100 shadow-[0_4px_24px_rgb(0,0,0,0.05)] overflow-hidden">
+
+      {/* ── Encabezado ── */}
+      <div className="px-5 pt-5 pb-4">
+        <div className="flex items-center gap-2 mb-5">
+          <Receipt size={14} className="text-amber-500" />
+          <h3 className="text-xs font-bold text-amber-700 uppercase tracking-widest">
+            Desglose de Costos
+          </h3>
+        </div>
+
+        {/* ── Líneas de costos ── */}
+        <div className="space-y-3.5">
+          <TicketRow icon="🛒" label="Ingredientes" value={costoIng} />
+          <TicketRow
+            icon="⏱️"
+            label="Mano de obra"
+            hint={`${tiempo} min · ${formatARS(valorHora)}/h`}
+            value={costoMO}
+          />
+          <TicketRow
+            icon="💡"
+            label="Costos fijos"
+            hint={`${tiempo} min · ${formatARS(costoFijoHora)}/h`}
+            value={costoFijo}
+          />
+          <TicketRow icon="📦" label="Empaque" value={costoPackaging} />
+        </div>
+
+        {/* ── Separador estilo ticket perforado ── */}
+        <div className="relative my-5">
+          <div className="border-t-2 border-dashed border-amber-200" />
+          <div className="absolute -left-5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border border-amber-100" />
+          <div className="absolute -right-5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border border-amber-100" />
+        </div>
+
+        {/* ── Costo base total ── */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-base">💰</span>
+            <div>
+              <p className="text-sm font-bold text-stone-700">Costo base total</p>
+              <p className="text-[10px] text-stone-400">{formatARS(costoPorcion)} por porción</p>
+            </div>
+          </div>
+          <span className="text-xl font-black text-stone-800 tabular-nums">
+            {formatARS(costoTotal)}
+          </span>
+        </div>
       </div>
-      <span className="text-sm font-semibold text-gray-700">{formatARS(value)}</span>
+
+      {/* ── Separador sólido ── */}
+      <div className="h-px bg-amber-100" />
+
+      {/* ── Margen de ganancia ── */}
+      <div className="px-5 py-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <TrendingUp size={13} className="text-rose-400" />
+            <span className="text-xs font-semibold text-stone-600">Margen de ganancia</span>
+          </div>
+          <span className="text-lg font-black text-rose-500">{margen}%</span>
+        </div>
+
+        <input
+          type="range" min="50" max="400" step="5"
+          value={margen}
+          onChange={e => onMargenChange(Number(e.target.value))}
+          className="w-full accent-rose-500"
+        />
+        <div className="flex justify-between text-[10px] text-stone-300 -mt-1">
+          <span>50%</span><span>150%</span><span>250%</span><span>400%</span>
+        </div>
+
+        {/* Ganancia en $ */}
+        <div className="flex items-center justify-between bg-emerald-50 rounded-xl px-3 py-2.5 border border-emerald-100">
+          <div className="flex items-center gap-1.5">
+            <span>📈</span>
+            <div>
+              <p className="text-xs font-semibold text-emerald-700">Ganancia neta</p>
+              <p className="text-[10px] text-emerald-500">
+                {margen}% de {formatARS(costoTotal)}
+              </p>
+            </div>
+          </div>
+          <span className="text-base font-black text-emerald-600 tabular-nums">
+            {formatARS(gananciaTotal)}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Precio final ── zona destacada ── */}
+      <div className="bg-rose-50 border-t border-rose-100 px-5 py-5 text-center">
+        <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2 flex items-center justify-center gap-1.5">
+          🏷️ Precio de venta sugerido
+        </p>
+        <p className="text-3xl font-bold text-stone-800 tracking-tight tabular-nums">
+          {formatARS(precioVenta)}
+        </p>
+        <p className="text-xs text-stone-400 mt-1.5 flex items-center justify-center gap-2">
+          <span>{formatARS(precioPorPorcion)} por porción</span>
+          <span className="text-stone-300">·</span>
+          <span>{porciones} porciones</span>
+        </p>
+
+        {/* Tip de configuración */}
+        <p className="text-[10px] text-rose-300 flex items-center justify-center gap-1 mt-3">
+          <Info size={9} />
+          Hora trabajo: {formatARS(valorHora)} · Costo fijo/h: {formatARS(costoFijoHora)}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── TicketRow ─────────────────────────────────────────────────────────────────
+function TicketRow({ icon, label, hint, value }: {
+  icon: string; label: string; hint?: string; value: number;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-start gap-2">
+        <span className="text-sm leading-none mt-0.5 w-5 text-center shrink-0">{icon}</span>
+        <div>
+          <p className="text-xs font-medium text-stone-600 leading-tight">{label}</p>
+          {hint && <p className="text-[10px] text-stone-400 mt-0.5">{hint}</p>}
+        </div>
+      </div>
+      <span className="text-sm font-semibold text-stone-700 tabular-nums shrink-0">
+        {formatARS(value)}
+      </span>
     </div>
   );
 }

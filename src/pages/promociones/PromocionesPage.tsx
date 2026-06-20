@@ -50,11 +50,13 @@ export default function PromocionesPage() {
     setUploading(true);
 
     try {
-      const tempId = uuidv4();          // ID temporal para el nombre del archivo
+      const tempId = uuidv4();
       const publicUrl = await uploadProductImage(file, `promo-${tempId}`);
       setForm(f => ({ ...f, imagen_url: publicUrl }));
-    } catch (err) {
-      setUploadErr('Error al subir la imagen. Revisá tu conexión o el bucket de Supabase.');
+    } catch (err: any) {
+      const msg = err?.message ?? JSON.stringify(err);
+      console.error('[Upload error]', msg);
+      setUploadErr(`Error: ${msg}`);
       setPreviewUrl('');
     } finally {
       setUploading(false);

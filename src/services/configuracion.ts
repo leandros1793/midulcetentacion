@@ -7,6 +7,10 @@ const DEFAULT_CONFIG: Configuracion = {
   id: 'singleton',
   valor_hora_trabajo: 500,
   costo_fijo_por_hora: 100,
+  nombre_contacto_1: 'Belu',
+  whatsapp_numero: '5493512476048',
+  nombre_contacto_2: 'Flor',
+  whatsapp_numero_2: '5493512217870',
   updated_at: new Date().toISOString(),
 };
 

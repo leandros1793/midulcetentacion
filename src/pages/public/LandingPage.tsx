@@ -32,7 +32,8 @@ interface ProductoConPrecio extends Receta {
 
 export default function LandingPage() {
   const [productos, setProductos] = useState<ProductoConPrecio[]>([]);
-  const whatsappNumero = useMemo(() => configuracionService.get().whatsapp_numero ?? '5493512000000', []);
+  const config = useMemo(() => configuracionService.get(), []);
+  const whatsappNumero = config.whatsapp_numero ?? '5493512476048';
 
   useEffect(() => {
     const ingredientes  = ingredientesService.getAll();
@@ -168,7 +169,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CTA WhatsApp final ────────────────────────────────────────────────── */}
+      {/* ── CTA Contacto ─────────────────────────────────────────────────────── */}
       <section className="bg-gradient-to-r from-green-500 to-emerald-600 py-12 px-4 text-white text-center">
         <div className="max-w-sm mx-auto">
           <span className="text-4xl mb-4 block">💬</span>
@@ -176,13 +177,26 @@ export default function LandingPage() {
           <p className="text-green-100 text-sm mb-6">
             Escribinos por WhatsApp y te respondemos a la brevedad. Hacemos pedidos personalizados.
           </p>
-          <a
-            href={`https://wa.me/${whatsappNumero}`}
-            target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-white text-green-600 font-bold py-3 px-8 rounded-2xl hover:bg-green-50 transition-colors"
-          >
-            <MessageCircle size={20} /> Escribir por WhatsApp
-          </a>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            {/* Contacto 1 */}
+            <a
+              href={`https://wa.me/${config.whatsapp_numero ?? '5493512476048'}`}
+              target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-green-600 font-bold py-3 px-6 rounded-2xl hover:bg-green-50 transition-colors justify-center"
+            >
+              <MessageCircle size={18} /> {config.nombre_contacto_1 ?? 'Belu'}
+            </a>
+            {/* Contacto 2 */}
+            {config.whatsapp_numero_2 && (
+              <a
+                href={`https://wa.me/${config.whatsapp_numero_2}`}
+                target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-white text-green-600 font-bold py-3 px-6 rounded-2xl hover:bg-green-50 transition-colors justify-center"
+              >
+                <MessageCircle size={18} /> {config.nombre_contacto_2 ?? 'Flor'}
+              </a>
+            )}
+          </div>
         </div>
       </section>
 
@@ -190,9 +204,9 @@ export default function LandingPage() {
       <footer className="bg-gray-900 text-gray-400 text-center py-6 px-4">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Heart size={12} className="text-rose-400" />
-          <span className="text-xs">Hecho con amor · Mi Dulce Tentación · Córdoba, Argentina</span>
+          <span className="text-xs">Hecho con amor · Repostería &amp; Cotillón Dulce Tentación · Córdoba</span>
         </div>
-        <p className="text-xs text-gray-600">Pastelería artesanal a pedido</p>
+        <p className="text-xs text-gray-600">📞 Belu: 351 247-6048 · Flor: 351 221-7870</p>
       </footer>
     </div>
   );

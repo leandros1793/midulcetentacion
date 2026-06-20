@@ -15,7 +15,10 @@ export default function ConfiguracionPage() {
     configuracionService.update({
       valor_hora_trabajo: config.valor_hora_trabajo,
       costo_fijo_por_hora: config.costo_fijo_por_hora,
+      nombre_contacto_1: config.nombre_contacto_1,
       whatsapp_numero: config.whatsapp_numero,
+      nombre_contacto_2: config.nombre_contacto_2,
+      whatsapp_numero_2: config.whatsapp_numero_2,
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -64,24 +67,51 @@ export default function ConfiguracionPage() {
 
         <div className="flex items-center gap-2 mb-1">
           <MessageCircle size={15} className="text-green-500" />
-          <h3 className="text-sm font-semibold text-gray-700">WhatsApp del negocio</h3>
+          <h3 className="text-sm font-semibold text-gray-700">Contactos del negocio</h3>
         </div>
-        <div>
-          <label className="label">Número de WhatsApp</label>
-          <input type="text" className="input" placeholder="ej. 5493512345678"
-            value={config.whatsapp_numero ?? ''}
-            onChange={e => setConfig(c => ({ ...c, whatsapp_numero: e.target.value }))} />
-          <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-            <Info size={10} /> Código de país + número, sin + ni espacios. Ej: 5493512345678
-          </p>
+        <p className="text-xs text-gray-400 -mt-2 flex items-center gap-1">
+          <Info size={10} /> Código de país + número, sin + ni espacios.
+        </p>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="label">Nombre (1)</label>
+            <input type="text" className="input" placeholder="ej. Belu"
+              value={config.nombre_contacto_1 ?? ''}
+              onChange={e => setConfig(c => ({ ...c, nombre_contacto_1: e.target.value }))} />
+          </div>
+          <div>
+            <label className="label">WhatsApp (1)</label>
+            <input type="text" className="input" placeholder="5493512476048"
+              value={config.whatsapp_numero ?? ''}
+              onChange={e => setConfig(c => ({ ...c, whatsapp_numero: e.target.value }))} />
+          </div>
         </div>
         {config.whatsapp_numero && (
-          <a
-            href={`https://wa.me/${config.whatsapp_numero}`}
-            target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-2 text-xs text-green-600 hover:text-green-700"
-          >
-            <ExternalLink size={11} /> Probar enlace de WhatsApp
+          <a href={`https://wa.me/${config.whatsapp_numero}`} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2 text-xs text-green-600 hover:text-green-700">
+            <ExternalLink size={11} /> Probar WA de {config.nombre_contacto_1 || 'Contacto 1'}
+          </a>
+        )}
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="label">Nombre (2)</label>
+            <input type="text" className="input" placeholder="ej. Flor"
+              value={config.nombre_contacto_2 ?? ''}
+              onChange={e => setConfig(c => ({ ...c, nombre_contacto_2: e.target.value }))} />
+          </div>
+          <div>
+            <label className="label">WhatsApp (2)</label>
+            <input type="text" className="input" placeholder="5493512217870"
+              value={config.whatsapp_numero_2 ?? ''}
+              onChange={e => setConfig(c => ({ ...c, whatsapp_numero_2: e.target.value }))} />
+          </div>
+        </div>
+        {config.whatsapp_numero_2 && (
+          <a href={`https://wa.me/${config.whatsapp_numero_2}`} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2 text-xs text-green-600 hover:text-green-700">
+            <ExternalLink size={11} /> Probar WA de {config.nombre_contacto_2 || 'Contacto 2'}
           </a>
         )}
 

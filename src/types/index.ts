@@ -94,6 +94,9 @@ export interface Configuracion {
   valor_hora_trabajo: number;      // ARS por hora
   costo_fijo_por_hora: number;     // ARS por hora (alquiler + servicios)
   whatsapp_numero?: string;        // ej. "5493512345678" (código país + número)
+  nombre_contacto_1?: string;      // ej. "Belu"
+  whatsapp_numero_2?: string;      // segundo contacto
+  nombre_contacto_2?: string;      // ej. "Flor"
   updated_at: string;
 }
 

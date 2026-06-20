@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ChefHat, Lock, Mail, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 export default function LoginPage() {
@@ -37,10 +37,14 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex bg-rose-500 rounded-2xl p-4 shadow-lg shadow-rose-200 mb-4">
-            <ChefHat size={32} className="text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800">Mi Dulce Tentación</h1>
+          <img
+            src="/logo.png"
+            alt="Dulce Tentación"
+            className="w-40 h-40 object-contain mx-auto mb-2 drop-shadow-md"
+            onError={e => {
+              (e.currentTarget as HTMLImageElement).style.display = 'none';
+            }}
+          />
           <p className="text-sm text-gray-500 mt-1">Panel de gestión interno</p>
         </div>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Phone, ChefHat, Star, Clock, Heart, MessageCircle } from 'lucide-react';
+import { ShoppingBag, Star, Clock, Heart, MessageCircle } from 'lucide-react';
 import { ingredientesService, recetasService, configuracionService } from '../../services';
 import { calcCostoLinea } from '../../types';
 import type { Receta } from '../../types';
@@ -60,10 +60,13 @@ export default function LandingPage() {
       {/* ── Navbar ───────────────────────────────────────────────────────────── */}
       <nav className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-rose-100 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="bg-rose-500 rounded-xl p-1.5">
-            <ChefHat size={18} className="text-white" />
-          </div>
-          <span className="font-bold text-gray-800 text-sm">Mi Dulce Tentación</span>
+          <img
+            src="/logo.png"
+            alt="Dulce Tentación"
+            className="h-9 w-9 object-contain rounded-xl"
+            onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          />
+          <span className="font-bold text-gray-800 text-sm">Dulce Tentación</span>
         </div>
         <div className="flex items-center gap-2">
           <a
@@ -89,10 +92,17 @@ export default function LandingPage() {
         </div>
 
         <div className="relative max-w-md mx-auto text-center">
-          <span className="inline-flex items-center gap-1.5 bg-rose-100 text-rose-600 text-xs font-semibold px-3 py-1 rounded-full mb-5">
-            <Star size={11} fill="currentColor" /> Pastelería artesanal · Córdoba
+          {/* Logo principal */}
+          <img
+            src="/logo.png"
+            alt="Dulce Tentación"
+            className="w-52 h-52 object-contain mx-auto mb-4 drop-shadow-xl"
+            onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          />
+          <span className="inline-flex items-center gap-1.5 bg-rose-100 text-rose-600 text-xs font-semibold px-3 py-1 rounded-full mb-4">
+            <Star size={11} fill="currentColor" /> Repostería &amp; Cotillón · Córdoba
           </span>
-          <h1 className="text-4xl font-black text-gray-900 leading-tight mb-4">
+          <h1 className="text-3xl font-black text-gray-900 leading-tight mb-4">
             Endulzamos<br />
             <span className="text-rose-500">cada momento</span>
           </h1>

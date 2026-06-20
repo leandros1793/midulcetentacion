@@ -21,7 +21,8 @@ export const configuracionService = {
       storage.create<Configuracion>(KEY, DEFAULT_CONFIG);
       return DEFAULT_CONFIG;
     }
-    return all[0];
+    // Fusiona con defaults para que campos nuevos siempre tengan valor
+    return { ...DEFAULT_CONFIG, ...all[0] };
   },
   update: (data: Partial<Omit<Configuracion, 'id'>>): Configuracion => {
     const current = configuracionService.get();

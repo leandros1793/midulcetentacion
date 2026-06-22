@@ -200,34 +200,29 @@ export default function RecetasPage() {
           </div>
 
           {/* Visibilidad en catálogo */}
-          <button
-            type="button"
-            onClick={() => setForm(f => ({ ...f, visible_en_catalogo: !f.visible_en_catalogo }))}
-            className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all duration-200 ${
-              form.visible_en_catalogo
-                ? 'border-rose-200 bg-rose-50/60'
-                : 'border-stone-200 bg-stone-50/60'
-            }`}
-          >
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-              form.visible_en_catalogo ? 'bg-rose-500' : 'bg-stone-200'
-            }`}>
-              {form.visible_en_catalogo
-                ? <Globe size={15} className="text-white" />
-                : <Lock size={15} className="text-stone-400" />
-              }
+          <div>
+            <label className="label">Visibilidad</label>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { value: false, label: 'Solo interna', icon: <Lock size={13} /> },
+                { value: true,  label: 'En catálogo',  icon: <Globe size={13} /> },
+              ] as { value: boolean; label: string; icon: React.ReactNode }[]).map(opt => (
+                <button key={String(opt.value)} type="button"
+                  onClick={() => setForm(f => ({ ...f, visible_en_catalogo: opt.value }))}
+                  className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl border-2 text-sm font-semibold transition-all ${
+                    form.visible_en_catalogo === opt.value
+                      ? opt.value
+                        ? 'border-rose-300 bg-rose-50/60 text-rose-600'
+                        : 'border-stone-300 bg-stone-100/60 text-stone-600'
+                      : 'border-stone-200 bg-stone-50/40 text-stone-400 hover:border-stone-300'
+                  }`}
+                >
+                  {opt.icon}
+                  {opt.label}
+                </button>
+              ))}
             </div>
-            <div className="text-left min-w-0">
-              <p className={`text-sm font-bold leading-tight ${form.visible_en_catalogo ? 'text-rose-600' : 'text-stone-500'}`}>
-                {form.visible_en_catalogo ? 'Publicar en el catálogo' : 'Solo interna'}
-              </p>
-              <p className="text-xs text-stone-400 mt-0.5 leading-tight">
-                {form.visible_en_catalogo
-                  ? 'Los clientes la ven en la landing'
-                  : 'Solo la ven las pasteleras en el panel'}
-              </p>
-            </div>
-          </button>
+          </div>
 
           <button onClick={handleCreate} disabled={creating || !form.nombre.trim()} className="btn-primary w-full justify-center mt-1">
             {creating ? <><Loader2 size={14} className="animate-spin" /> Creando…</> : 'Crear y calcular costos →'}

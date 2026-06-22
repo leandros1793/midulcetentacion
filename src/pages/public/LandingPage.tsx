@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Clock, Star, Heart, Sparkles, Flame, Tag, Instagram, ExternalLink } from 'lucide-react';
 import { ingredientesService, recetasService, configuracionService, promocionesService } from '../../services';
 import { calcCostoLinea } from '../../types';
-import type { Receta, Promocion } from '../../types';
+import type { Receta, Configuracion, Promocion } from '../../types';
 
 // ── WhatsApp SVG Icon ─────────────────────────────────────────────────────────
 function WhatsAppIcon({ size = 20 }: { size?: number }) {
@@ -35,36 +35,83 @@ interface ProductoConPrecio extends Receta {
   emoji: string;
 }
 
+// Defaults para cuando la config todavía está cargando
+const CONFIG_DEFAULT: Pick<Configuracion,
+  'whatsapp_numero' | 'whatsapp_numero_2' | 'nombre_contacto_1' | 'nombre_contacto_2' |
+  'instagram_url' | 'instagram_usuario' | 'instagram_destacados' |
+  'valor_hora_trabajo' | 'costo_fijo_por_hora'
+> = {
+  whatsapp_numero:      '5493512476048',
+  whatsapp_numero_2:    '5493512217870',
+  nombre_contacto_1:    'Belu',
+  nombre_contacto_2:    'Flor',
+  instagram_url:        '',
+  instagram_usuario:    '@midulce_tentacion7',
+  instagram_destacados: [],
+  valor_hora_trabajo:   500,
+  costo_fijo_por_hora:  100,
+};
+
 // ── Componente principal ──────────────────────────────────────────────────────
 export default function LandingPage() {
   const [productos, setProductos] = useState<ProductoConPrecio[]>([]);
-  const [promos, setPromos]       = useState<Promocion[]>([]);
-  const config = useMemo(() => configuracionService.get(), []);
-  const whatsappNumero = config.whatsapp_numero ?? '5493512476048';
+  const [promos,    setPromos]    = useState<Promocion[]>([]);
+  const [config,    setConfig]    = useState(CONFIG_DEFAULT);
 
+  // Un solo useEffect carga todo en paralelo
   useEffect(() => {
-    setPromos(promocionesService.getActivas());
+    let cancelled = false;
+    async function load() {
+      try {
+        const [ingredientes, recetas, allLineas, cfg] = await Promise.all([
+          ingredientesService.getAll(),
+          recetasService.getAll(),
+          recetasService.getAllLineas(),
+          configuracionService.get(),
+        ]);
+        if (cancelled) return;
+
+        setConfig({
+          whatsapp_numero:      cfg.whatsapp_numero      ?? CONFIG_DEFAULT.whatsapp_numero,
+          whatsapp_numero_2:    cfg.whatsapp_numero_2    ?? CONFIG_DEFAULT.whatsapp_numero_2,
+          nombre_contacto_1:    cfg.nombre_contacto_1    ?? CONFIG_DEFAULT.nombre_contacto_1,
+          nombre_contacto_2:    cfg.nombre_contacto_2    ?? CONFIG_DEFAULT.nombre_contacto_2,
+          instagram_url:        cfg.instagram_url        ?? '',
+          instagram_usuario:    cfg.instagram_usuario    ?? CONFIG_DEFAULT.instagram_usuario,
+          instagram_destacados: cfg.instagram_destacados ?? [],
+          valor_hora_trabajo:   cfg.valor_hora_trabajo,
+          costo_fijo_por_hora:  cfg.costo_fijo_por_hora,
+        });
+
+        const ingMap = Object.fromEntries(ingredientes.map(i => [i.id, i]));
+        const visibles = recetas.filter(r => r.visible_en_catalogo !== false);
+
+        const lista: ProductoConPrecio[] = visibles.map((receta, idx) => {
+          const lineas  = allLineas.filter(l => l.receta_id === receta.id);
+          const costoIng = lineas.reduce((s, li) => {
+            const ing = ingMap[li.ingrediente_id];
+            return ing ? s + calcCostoLinea(li, ing) : s;
+          }, 0);
+          const h = receta.tiempo_prep_minutos / 60;
+          const costoTotal = costoIng
+            + h * cfg.valor_hora_trabajo
+            + h * cfg.costo_fijo_por_hora
+            + receta.costo_packaging_fijo;
+          const precioVenta = costoTotal * (1 + receta.margen_ganancia_porcentaje / 100);
+          return { ...receta, precioVenta, emoji: CAKE_EMOJIS[idx % CAKE_EMOJIS.length] };
+        });
+
+        setProductos(lista);
+        setPromos(promocionesService.getActivas()); // sigue siendo localStorage (sync)
+      } catch (err) {
+        console.error('[LandingPage] Error cargando datos:', err);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
   }, []);
 
-  useEffect(() => {
-    const ingredientes = ingredientesService.getAll();
-    const cfg = configuracionService.get();
-    const recetas = recetasService.getAll().filter(r => r.visible_en_catalogo !== false);
-
-    const lista: ProductoConPrecio[] = recetas.map((receta, idx) => {
-      const lineas = recetasService.getLineas(receta.id);
-      const costoIng = lineas.reduce((s, li) => {
-        const ing = ingredientes.find(i => i.id === li.ingrediente_id);
-        return ing ? s + calcCostoLinea(li, ing) : s;
-      }, 0);
-      const h = receta.tiempo_prep_minutos / 60;
-      const costoTotal = costoIng + h * cfg.valor_hora_trabajo + h * cfg.costo_fijo_por_hora + receta.costo_packaging_fijo;
-      const precioVenta = costoTotal * (1 + receta.margen_ganancia_porcentaje / 100);
-      return { ...receta, precioVenta, emoji: CAKE_EMOJIS[idx % CAKE_EMOJIS.length] };
-    });
-
-    setProductos(lista);
-  }, []);
+  const whatsappNumero = config.whatsapp_numero ?? CONFIG_DEFAULT.whatsapp_numero;
 
   return (
     <div className="min-h-screen bg-amber-50/30 font-sans antialiased">

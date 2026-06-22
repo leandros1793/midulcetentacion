@@ -7,11 +7,26 @@ function formatARS(n: number) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n);
 }
 
+// Valores iniciales mientras carga Supabase (evita estado null)
+const DEFAULT_CONFIG: Configuracion = {
+  id:                   'singleton',
+  valor_hora_trabajo:   500,
+  costo_fijo_por_hora:  100,
+  nombre_contacto_1:    'Belu',
+  whatsapp_numero:      '',
+  nombre_contacto_2:    'Flor',
+  whatsapp_numero_2:    '',
+  instagram_usuario:    '',
+  instagram_url:        '',
+  instagram_destacados: [],
+  updated_at:           new Date().toISOString(),
+};
+
 export default function ConfiguracionPage() {
-  const [config,   setConfig]   = useState<Configuracion | null>(null);
-  const [loading,  setLoading]  = useState(true);
-  const [saving,   setSaving]   = useState(false);
-  const [saved,    setSaved]    = useState(false);
+  const [config,  setConfig]  = useState<Configuracion>(DEFAULT_CONFIG);
+  const [loading, setLoading] = useState(true);
+  const [saving,  setSaving]  = useState(false);
+  const [saved,   setSaved]   = useState(false);
 
   useEffect(() => {
     configuracionService.get()
@@ -20,18 +35,17 @@ export default function ConfiguracionPage() {
   }, []);
 
   const setDestacado = (idx: number, val: string) => {
-    const arr = [...(config?.instagram_destacados ?? ['', '', ''])];
+    const arr = [...(config.instagram_destacados ?? ['', '', ''])];
     arr[idx] = val;
-    setConfig(c => c ? { ...c, instagram_destacados: arr } : c);
+    setConfig(c => ({ ...c, instagram_destacados: arr }));
   };
   const destacados = [
-    config?.instagram_destacados?.[0] ?? '',
-    config?.instagram_destacados?.[1] ?? '',
-    config?.instagram_destacados?.[2] ?? '',
+    config.instagram_destacados?.[0] ?? '',
+    config.instagram_destacados?.[1] ?? '',
+    config.instagram_destacados?.[2] ?? '',
   ];
 
   const handleSave = async () => {
-    if (!config) return;
     setSaving(true);
     try {
       const updated = await configuracionService.update({
@@ -53,7 +67,7 @@ export default function ConfiguracionPage() {
     }
   };
 
-  if (loading || !config) return (
+  if (loading) return (
     <div className="flex justify-center py-16">
       <Loader2 size={24} className="animate-spin text-rose-300" />
     </div>

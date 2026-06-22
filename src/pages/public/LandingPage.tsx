@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingBag, Clock, Star, Heart, Sparkles, Flame, Tag, Instagram, ExternalLink } from 'lucide-react';
 import { ingredientesService, recetasService, configuracionService, promocionesService } from '../../services';
 import { calcCostoLinea } from '../../types';
-import type { Receta, Configuracion, Promocion } from '../../types';
+import type { Receta, Promocion } from '../../types';
 
 // ── WhatsApp SVG Icon ─────────────────────────────────────────────────────────
 function WhatsAppIcon({ size = 20 }: { size?: number }) {
@@ -35,19 +35,17 @@ interface ProductoConPrecio extends Receta {
   emoji: string;
 }
 
-// Defaults para cuando la config todavía está cargando
-const CONFIG_DEFAULT: Pick<Configuracion,
-  'whatsapp_numero' | 'whatsapp_numero_2' | 'nombre_contacto_1' | 'nombre_contacto_2' |
-  'instagram_url' | 'instagram_usuario' | 'instagram_destacados' |
-  'valor_hora_trabajo' | 'costo_fijo_por_hora'
-> = {
+// Defaults para cuando la config todavía está cargando.
+// Sin anotación de tipo explícita — TS infiere los valores como string/number concretos,
+// no como string | undefined (que heredaría de los campos opcionales de Configuracion).
+const CONFIG_DEFAULT = {
   whatsapp_numero:      '5493512476048',
   whatsapp_numero_2:    '5493512217870',
   nombre_contacto_1:    'Belu',
   nombre_contacto_2:    'Flor',
   instagram_url:        '',
   instagram_usuario:    '@midulce_tentacion7',
-  instagram_destacados: [],
+  instagram_destacados: [] as string[],
   valor_hora_trabajo:   500,
   costo_fijo_por_hora:  100,
 };
@@ -111,7 +109,7 @@ export default function LandingPage() {
     return () => { cancelled = true; };
   }, []);
 
-  const whatsappNumero = config.whatsapp_numero ?? CONFIG_DEFAULT.whatsapp_numero;
+  const whatsappNumero = config.whatsapp_numero;
 
   return (
     <div className="min-h-screen bg-amber-50/30 font-sans antialiased">

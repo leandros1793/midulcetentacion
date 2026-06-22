@@ -116,36 +116,44 @@ export default function LandingPage() {
     <div className="min-h-screen bg-amber-50/30 font-sans antialiased">
 
       {/* ── Navbar flotante ──────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-stone-200/50 px-5 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <img
-            src="/logo.png"
-            alt="Dulce Tentación"
-            className="h-9 w-9 object-contain rounded-xl"
-            onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-          />
-          <div className="leading-none">
-            <p className="text-[9px] text-rose-400 font-bold tracking-widest uppercase">Repostería & Cotillón</p>
-            <span className="font-extrabold text-stone-800 text-sm">Dulce Tentación</span>
+      <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-stone-200/50">
+        <div className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/logo.png"
+              alt="Dulce Tentación"
+              className="h-9 w-9 object-contain rounded-xl"
+              onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
+            <div className="leading-none">
+              <p className="text-[9px] text-rose-400 font-bold tracking-widest uppercase">Repostería & Cotillón</p>
+              <span className="font-extrabold text-stone-800 text-sm lg:text-base">Dulce Tentación</span>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <a
-            href={`https://wa.me/${whatsappNumero}`}
-            target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3.5 py-2 rounded-full transition-all duration-200 shadow-sm shadow-green-200/80"
-          >
-            <WhatsAppIcon size={12} /> WhatsApp
-          </a>
-          <Link to="/login" className="text-xs text-stone-400 hover:text-rose-500 transition-colors px-1 py-2">
-            Panel →
-          </Link>
+          <div className="flex items-center gap-3">
+            <a href="#catalogo" className="hidden lg:inline text-sm font-semibold text-stone-500 hover:text-rose-500 transition-colors">
+              Menú
+            </a>
+            <a href="#contacto" className="hidden lg:inline text-sm font-semibold text-stone-500 hover:text-rose-500 transition-colors">
+              Contacto
+            </a>
+            <a
+              href={`https://wa.me/${whatsappNumero}`}
+              target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3.5 py-2 rounded-full transition-all duration-200 shadow-sm shadow-green-200/80"
+            >
+              <WhatsAppIcon size={12} /> WhatsApp
+            </a>
+            <Link to="/login" className="text-xs text-stone-400 hover:text-rose-500 transition-colors px-1 py-2">
+              Panel →
+            </Link>
+          </div>
         </div>
       </nav>
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <section
-        className="relative overflow-hidden pt-10 pb-20 px-5"
+        className="relative overflow-hidden pt-10 pb-20 px-5 lg:pt-24 lg:pb-32"
         style={{ background: 'radial-gradient(ellipse at top, rgba(254,205,211,0.35) 0%, rgba(255,237,213,0.2) 50%, rgba(255,251,235,0.1) 100%), #fffbf0' }}
       >
         {/* Manchas decorativas difusas */}
@@ -155,46 +163,50 @@ export default function LandingPage() {
           <div className="absolute bottom-0 right-1/4 w-48 h-48 rounded-full bg-pink-100/30 blur-2xl" />
         </div>
 
-        <div className="relative max-w-sm mx-auto text-center">
+        {/* En mobile: columna centrada. En desktop: 2 columnas — texto izq, logo der */}
+        <div className="relative max-w-sm mx-auto text-center lg:max-w-5xl lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center lg:text-left">
 
-          {/* Logo integrado con anillo decorativo */}
-          <div className="relative inline-block mb-6">
+          {/* Logo — en mobile arriba, en desktop columna derecha */}
+          <div className="relative inline-block mb-6 lg:mb-0 lg:order-2 lg:flex lg:justify-center lg:items-center">
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-rose-200/40 to-amber-100/40 blur-2xl scale-110" />
             <img
               src="/logo.png"
               alt="Dulce Tentación"
-              className="relative w-52 h-52 object-contain drop-shadow-[0_20px_40px_rgba(244,63,94,0.18)]"
+              className="relative w-52 h-52 lg:w-80 lg:h-80 object-contain drop-shadow-[0_20px_40px_rgba(244,63,94,0.18)]"
               onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
             />
           </div>
 
-          <span className="inline-flex items-center gap-1.5 bg-rose-100 text-rose-500 text-xs font-bold px-4 py-1.5 rounded-full mb-5 tracking-wide shadow-sm shadow-rose-100">
-            <Star size={9} fill="currentColor" /> Córdoba · Artesanal · A pedido
-          </span>
+          {/* Texto — en mobile abajo, en desktop columna izquierda */}
+          <div className="lg:order-1">
+            <span className="inline-flex items-center gap-1.5 bg-rose-100 text-rose-500 text-xs font-bold px-4 py-1.5 rounded-full mb-5 tracking-wide shadow-sm shadow-rose-100">
+              <Star size={9} fill="currentColor" /> Córdoba · Artesanal · A pedido
+            </span>
 
-          <h1 className="text-4xl font-extrabold text-stone-800 tracking-tight leading-[1.1] mb-3">
-            Endulzamos<br />
-            <span className="text-rose-500">cada momento</span>
-          </h1>
+            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-stone-800 tracking-tight leading-[1.1] mb-4">
+              Endulzamos<br />
+              <span className="text-rose-500">cada momento</span>
+            </h1>
 
-          <p className="text-stone-500 text-[15px] leading-relaxed mb-8 max-w-[260px] mx-auto">
-            Tortas, alfajores y delicias artesanales hechas con amor y los mejores ingredientes.
-          </p>
+            <p className="text-stone-500 text-[15px] lg:text-base leading-relaxed mb-8 max-w-[260px] mx-auto lg:mx-0 lg:max-w-sm">
+              Tortas, alfajores y delicias artesanales hechas con amor y los mejores ingredientes.
+            </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a
-              href="#catalogo"
-              className="inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm py-3.5 px-7 rounded-full transition-all duration-300 shadow-lg shadow-rose-300/50 hover:shadow-rose-400/60 hover:-translate-y-0.5 active:translate-y-0"
-            >
-              <ShoppingBag size={15} /> Ver menú
-            </a>
-            <a
-              href={`https://wa.me/${whatsappNumero}`}
-              target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-white/80 hover:bg-white text-stone-700 font-bold text-sm py-3.5 px-7 rounded-full transition-all duration-300 border border-stone-200/80 shadow-sm hover:-translate-y-0.5 backdrop-blur-sm"
-            >
-              <WhatsAppIcon size={15} /> Pedir ahora
-            </a>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+              <a
+                href="#catalogo"
+                className="inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm py-3.5 px-7 rounded-full transition-all duration-300 shadow-lg shadow-rose-300/50 hover:shadow-rose-400/60 hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <ShoppingBag size={15} /> Ver menú
+              </a>
+              <a
+                href={`https://wa.me/${whatsappNumero}`}
+                target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 bg-white/80 hover:bg-white text-stone-700 font-bold text-sm py-3.5 px-7 rounded-full transition-all duration-300 border border-stone-200/80 shadow-sm hover:-translate-y-0.5 backdrop-blur-sm"
+              >
+                <WhatsAppIcon size={15} /> Pedir ahora
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -202,7 +214,7 @@ export default function LandingPage() {
       {/* ── Promociones Especiales ───────────────────────────────────────────── */}
       {promos.length > 0 && (
         <section className="py-10 px-5 bg-gradient-to-b from-amber-50/60 to-rose-50/30">
-          <div className="max-w-sm mx-auto">
+          <div className="max-w-sm mx-auto lg:max-w-5xl">
 
             {/* Header sección */}
             <div className="flex items-center gap-2 mb-6">
@@ -217,8 +229,8 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Cards de promos */}
-            <div className="flex flex-col gap-5">
+            {/* Cards de promos — 1 col mobile, 2-3 col desktop */}
+            <div className="flex flex-col gap-5 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6">
               {promos.map(promo => (
                 <PromoCard
                   key={promo.id}
@@ -233,7 +245,7 @@ export default function LandingPage() {
 
       {/* ── Propuesta de valor ────────────────────────────────────────────────── */}
       <section className="py-10 px-5">
-        <div className="max-w-sm mx-auto grid grid-cols-3 gap-3">
+        <div className="max-w-sm mx-auto grid grid-cols-3 gap-3 lg:max-w-3xl lg:gap-6">
           {[
             { icon: '🌿', label: 'Ingredientes naturales' },
             { icon: '✨', label: 'Diseños únicos' },
@@ -241,10 +253,10 @@ export default function LandingPage() {
           ].map(({ icon, label }) => (
             <div
               key={label}
-              className="flex flex-col items-center gap-2 bg-white/70 backdrop-blur-sm py-5 px-2 rounded-2xl shadow-[0_2px_12px_rgb(0,0,0,0.04)] border border-white"
+              className="flex flex-col items-center gap-2 bg-white/70 backdrop-blur-sm py-5 px-2 rounded-2xl shadow-[0_2px_12px_rgb(0,0,0,0.04)] border border-white lg:py-8 lg:px-4 lg:gap-3"
             >
-              <span className="text-2xl">{icon}</span>
-              <p className="text-[11px] text-stone-500 font-semibold leading-tight text-center">{label}</p>
+              <span className="text-2xl lg:text-4xl">{icon}</span>
+              <p className="text-[11px] lg:text-sm text-stone-500 font-semibold leading-tight text-center">{label}</p>
             </div>
           ))}
         </div>
@@ -252,18 +264,17 @@ export default function LandingPage() {
 
       {/* ── Catálogo ─────────────────────────────────────────────────────────── */}
       <section id="catalogo" className="py-6 px-5 pb-16">
-        <div className="max-w-sm mx-auto">
+        <div className="max-w-sm mx-auto lg:max-w-5xl">
 
           <div className="text-center mb-8">
             <span className="inline-flex items-center gap-1.5 bg-amber-100/80 text-amber-700 text-xs font-bold px-4 py-1.5 rounded-full mb-4 tracking-wide">
               <Sparkles size={11} /> Nuestras creaciones
             </span>
-            <h2 className="text-2xl font-extrabold text-stone-800 tracking-tight">Elaborado a pedido</h2>
+            <h2 className="text-2xl lg:text-3xl font-extrabold text-stone-800 tracking-tight">Elaborado a pedido</h2>
             <p className="text-sm text-stone-400 mt-1.5">Con ingredientes frescos y mucho amor 🩷</p>
           </div>
 
           {productos.length === 0 ? (
-            /* Estado vacío elegante */
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-12 text-center">
               <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-5">
                 <span className="text-4xl">🎂</span>
@@ -274,7 +285,8 @@ export default function LandingPage() {
               </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-4">
+            /* Mobile: columna · Desktop: grilla 2 col */
+            <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-5">
               {productos.map(p => (
                 <ProductCard key={p.id} producto={p} whatsappNumero={whatsappNumero} />
               ))}
@@ -284,8 +296,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── Contacto ─────────────────────────────────────────────────────────── */}
-      <section className="px-5 pb-16">
-        <div className="max-w-sm mx-auto bg-rose-50 rounded-3xl p-8 text-center border border-rose-100/80 shadow-[0_8px_40px_rgb(244,63,94,0.08)]">
+      <section id="contacto" className="px-5 pb-16">
+        <div className="max-w-sm mx-auto lg:max-w-2xl bg-rose-50 rounded-3xl p-8 text-center border border-rose-100/80 shadow-[0_8px_40px_rgb(244,63,94,0.08)]">
           <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm shadow-rose-100">
             <span className="text-2xl">💌</span>
           </div>
@@ -317,7 +329,7 @@ export default function LandingPage() {
       {/* ── Instagram ────────────────────────────────────────────────────────── */}
       {config.instagram_url && (
         <section className="px-5 pb-14">
-          <div className="max-w-sm mx-auto">
+          <div className="max-w-sm mx-auto lg:max-w-5xl lg:grid lg:grid-cols-[1fr_auto] lg:gap-10 lg:items-start">
 
             {/* Card principal con gradiente IG muy suave */}
             <div
@@ -366,7 +378,7 @@ export default function LandingPage() {
       )}
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-stone-100/80 bg-white/60 backdrop-blur-sm py-10 px-5 text-center">
+      <footer className="border-t border-stone-100/80 bg-white/60 backdrop-blur-sm py-10 px-5 text-center lg:py-12">
         <img
           src="/logo.png"
           alt="Dulce Tentación"
@@ -536,10 +548,10 @@ function ProductCard({ producto, whatsappNumero }: {
   const whatsappUrl = buildWhatsAppLink(whatsappNumero, producto.nombre);
 
   return (
-    <div className="group bg-white/80 backdrop-blur-sm rounded-3xl border border-white shadow-[0_4px_20px_rgb(0,0,0,0.05)] overflow-hidden flex transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-[0_16px_40px_rgb(0,0,0,0.09)] hover:border-rose-100/50">
+    <div className="group bg-white/80 backdrop-blur-sm rounded-3xl border border-white shadow-[0_4px_20px_rgb(0,0,0,0.05)] overflow-hidden flex lg:flex-col transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-[0_16px_40px_rgb(0,0,0,0.09)] hover:border-rose-100/50">
 
-      {/* Imagen / placeholder */}
-      <div className="w-28 shrink-0 bg-gradient-to-br from-rose-50 to-amber-50/80 flex items-center justify-center overflow-hidden">
+      {/* Imagen / placeholder — horizontal en mobile, banner arriba en desktop */}
+      <div className="w-28 shrink-0 lg:w-full lg:h-48 bg-gradient-to-br from-rose-50 to-amber-50/80 flex items-center justify-center overflow-hidden">
         {producto.image_url ? (
           <img
             src={producto.image_url}
@@ -547,7 +559,7 @@ function ProductCard({ producto, whatsappNumero }: {
             className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <span className="text-4xl transition-transform duration-300 group-hover:scale-110 select-none">
+          <span className="text-4xl lg:text-6xl transition-transform duration-300 group-hover:scale-110 select-none">
             {producto.emoji}
           </span>
         )}
@@ -556,7 +568,7 @@ function ProductCard({ producto, whatsappNumero }: {
       {/* Info */}
       <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
         <div>
-          <h3 className="font-extrabold text-stone-800 text-[15px] tracking-tight leading-tight mb-1.5 truncate">
+          <h3 className="font-extrabold text-stone-800 text-[15px] lg:text-base tracking-tight leading-tight mb-1.5 truncate">
             {producto.nombre}
           </h3>
           <div className="flex items-center gap-2.5 text-xs text-stone-400 mb-2">

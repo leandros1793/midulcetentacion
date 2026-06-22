@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, BookOpen, Clock, Users, ChevronRight, Trash2, Loader2, Globe, Lock } from 'lucide-react';
+import { Plus, BookOpen, Clock, Users, Pencil, Trash2, Loader2, Globe, Lock } from 'lucide-react';
 import { recetasService } from '../../services';
 import type { Receta, RecetaForm } from '../../types';
 import Modal from '../../components/ui/Modal';
@@ -86,16 +86,17 @@ export default function RecetasPage() {
       ) : (
         <div className="space-y-2">
           {recetas.map(r => (
-            <div key={r.id} className="card flex items-center gap-3">
+            <div key={r.id} className="card flex items-center gap-2">
+              {/* Info — toca para editar */}
               <button
                 onClick={() => setSelected(r)}
-                className="flex-1 flex items-center gap-3 text-left"
+                className="flex-1 flex items-center gap-3 text-left min-w-0"
               >
-                <div className="bg-violet-50 rounded-xl p-2.5">
+                <div className="bg-violet-50 rounded-xl p-2.5 shrink-0">
                   <BookOpen size={18} className="text-violet-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
                     <p className="font-semibold text-gray-800 text-sm truncate">{r.nombre}</p>
                     {r.visible_en_catalogo
                       ? <span className="shrink-0 inline-flex items-center gap-0.5 text-[9px] font-bold bg-rose-100 text-rose-500 px-1.5 py-0.5 rounded-full"><Globe size={8} /> Pública</span>
@@ -107,9 +108,20 @@ export default function RecetasPage() {
                     <span className="flex items-center gap-1"><Clock size={10} />{r.tiempo_prep_minutos} min</span>
                   </div>
                 </div>
-                <ChevronRight size={16} className="text-gray-300 shrink-0" />
               </button>
-              <button onClick={() => setDelId(r.id)} className="text-gray-200 hover:text-red-400 transition-colors">
+              {/* Acciones */}
+              <button
+                onClick={() => setSelected(r)}
+                className="shrink-0 p-2 text-stone-300 hover:text-violet-500 hover:bg-violet-50 rounded-xl transition-colors"
+                title="Editar receta"
+              >
+                <Pencil size={15} />
+              </button>
+              <button
+                onClick={() => setDelId(r.id)}
+                className="shrink-0 p-2 text-stone-300 hover:text-red-400 hover:bg-red-50 rounded-xl transition-colors"
+                title="Eliminar receta"
+              >
                 <Trash2 size={15} />
               </button>
             </div>
@@ -165,22 +177,22 @@ export default function RecetasPage() {
                 : 'border-stone-200 bg-stone-50/60'
             }`}
           >
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
               form.visible_en_catalogo ? 'bg-rose-500' : 'bg-stone-200'
             }`}>
               {form.visible_en_catalogo
-                ? <Globe size={16} className="text-white" />
-                : <Lock size={16} className="text-stone-400" />
+                ? <Globe size={15} className="text-white" />
+                : <Lock size={15} className="text-stone-400" />
               }
             </div>
-            <div className="text-left">
-              <p className={`text-sm font-bold ${form.visible_en_catalogo ? 'text-rose-600' : 'text-stone-500'}`}>
-                {form.visible_en_catalogo ? 'Publicar en el catálogo' : 'Solo para las pasteleras'}
+            <div className="text-left min-w-0">
+              <p className={`text-sm font-bold leading-tight ${form.visible_en_catalogo ? 'text-rose-600' : 'text-stone-500'}`}>
+                {form.visible_en_catalogo ? 'Publicar en el catálogo' : 'Solo interna'}
               </p>
-              <p className="text-xs text-stone-400 mt-0.5">
+              <p className="text-xs text-stone-400 mt-0.5 leading-tight">
                 {form.visible_en_catalogo
-                  ? 'Los clientes van a ver esta receta en la landing'
-                  : 'No aparece en la página pública, solo en el panel'}
+                  ? 'Los clientes la ven en la landing'
+                  : 'Solo la ven las pasteleras en el panel'}
               </p>
             </div>
           </button>

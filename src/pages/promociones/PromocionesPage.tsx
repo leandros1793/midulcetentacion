@@ -1,6 +1,9 @@
-import { useState, useRef, type ChangeEvent } from 'react';
+import { useState, useEffect, useCallback, useRef, type ChangeEvent } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Plus, Trash2, Tag, ToggleLeft, ToggleRight, ImageOff, Sparkles, Upload, X, Loader2 } from 'lucide-react';
+import {
+  Plus, Trash2, Tag, ToggleLeft, ToggleRight,
+  ImageOff, Sparkles, Upload, X, Loader2,
+} from 'lucide-react';
 import { promocionesService } from '../../services';
 import { uploadProductImage } from '../../services/supabase/uploadImage';
 import type { Promocion, PromocionForm } from '../../types';
@@ -20,42 +23,44 @@ const EMPTY_FORM: PromocionForm = {
 };
 
 export default function PromocionesPage() {
-  const [promos, setPromos]       = useState<Promocion[]>(() => promocionesService.getAll());
-  const [form, setForm]           = useState<PromocionForm>(EMPTY_FORM);
-  const [showForm, setShowForm]   = useState(false);
+  const [promos,    setPromos]    = useState<Promocion[]>([]);
+  const [loading,   setLoading]   = useState(true);
+  const [form,      setForm]      = useState<PromocionForm>(EMPTY_FORM);
+  const [showForm,  setShowForm]  = useState(false);
+  const [saving,    setSaving]    = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadErr, setUploadErr] = useState('');
-  const [previewUrl, setPreviewUrl] = useState('');   // URL local para preview inmediato
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const refresh = () => setPromos(promocionesService.getAll());
+  const refresh = useCallback(async () => {
+    try {
+      const data = await promocionesService.getAll();
+      setPromos(data);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  // ── Seleccionar y subir imagen ────────────────────────────────────────────
+  useEffect(() => { refresh(); }, [refresh]);
+
+  // ── Imagen ───────────────────────────────────────────────────────────────
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith('image/')) { setUploadErr('Solo se aceptan imágenes (JPG, PNG, WEBP).'); return; }
+    if (file.size > 8 * 1024 * 1024) { setUploadErr('La imagen no puede superar los 8 MB.'); return; }
 
-    if (!file.type.startsWith('image/')) {
-      setUploadErr('Solo se aceptan imágenes (JPG, PNG, WEBP).');
-      return;
-    }
-    if (file.size > 8 * 1024 * 1024) {
-      setUploadErr('La imagen no puede superar los 8 MB.');
-      return;
-    }
-
-    // Preview local instantáneo
     setPreviewUrl(URL.createObjectURL(file));
     setUploadErr('');
     setUploading(true);
-
     try {
-      const tempId = uuidv4();
-      const publicUrl = await uploadProductImage(file, `promo-${tempId}`);
+      const publicUrl = await uploadProductImage(file, `promo-${uuidv4()}`);
       setForm(f => ({ ...f, imagen_url: publicUrl }));
-    } catch (err: any) {
-      const msg = err?.message ?? JSON.stringify(err);
-      console.error('[Upload error]', msg);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : JSON.stringify(err);
       setUploadErr(`Error: ${msg}`);
       setPreviewUrl('');
     } finally {
@@ -70,25 +75,50 @@ export default function PromocionesPage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // ── CRUD ─────────────────────────────────────────────────────────────────
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.titulo.trim() || !form.imagen_url.trim()) return;
-    promocionesService.create(form);
+    setSaving(true);
+    try {
+      await promocionesService.create(form);
+      setForm(EMPTY_FORM);
+      setPreviewUrl('');
+      setUploadErr('');
+      setShowForm(false);
+      await refresh();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggle = async (promo: Promocion) => {
+    setTogglingId(promo.id);
+    try {
+      const updated = await promocionesService.toggleActiva(promo.id, promo.activa);
+      setPromos(prev => prev.map(p => p.id === updated.id ? updated : p));
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Eliminar esta promoción?')) return;
+    setDeletingId(id);
+    try {
+      await promocionesService.remove(id);
+      setPromos(prev => prev.filter(p => p.id !== id));
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const openForm = () => {
+    setShowForm(true);
     setForm(EMPTY_FORM);
     setPreviewUrl('');
     setUploadErr('');
-    setShowForm(false);
-    refresh();
   };
-
-  const handleToggle = (id: string) => { promocionesService.toggleActiva(id); refresh(); };
-  const handleDelete = (id: string) => {
-    if (!confirm('¿Eliminar esta promoción?')) return;
-    promocionesService.remove(id);
-    refresh();
-  };
-
-  const openForm = () => { setShowForm(true); setForm(EMPTY_FORM); setPreviewUrl(''); setUploadErr(''); };
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -101,8 +131,7 @@ export default function PromocionesPage() {
           <p className="text-xs text-stone-400 mt-0.5">Flyers y ofertas especiales de la tienda</p>
         </div>
         {!showForm && (
-          <button
-            onClick={openForm}
+          <button onClick={openForm}
             className="flex items-center gap-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-4 py-2.5 rounded-full transition-all shadow-sm shadow-rose-200"
           >
             <Plus size={14} /> Nueva promo
@@ -110,10 +139,9 @@ export default function PromocionesPage() {
         )}
       </div>
 
-      {/* Formulario */}
+      {/* Formulario de alta */}
       {showForm && (
-        <form
-          onSubmit={handleSubmit}
+        <form onSubmit={handleSubmit}
           className="bg-white rounded-3xl border border-stone-100 shadow-[0_4px_20px_rgb(0,0,0,0.06)] p-5 space-y-4"
         >
           <div className="flex items-center gap-2">
@@ -121,70 +149,50 @@ export default function PromocionesPage() {
             <h3 className="text-sm font-bold text-stone-700">Nueva promoción</h3>
           </div>
 
-          {/* Título */}
           <div>
             <label className="label">Título *</label>
-            <input
-              className="input"
-              placeholder='ej. "Mini Donitas Temáticas"'
+            <input className="input" placeholder='ej. "Mini Donitas Temáticas"'
               value={form.titulo}
               onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
               required
             />
           </div>
 
-          {/* Descripción */}
           <div>
             <label className="label">Descripción (opcional)</label>
-            <input
-              className="input"
-              placeholder='ej. "Docena personalizada para eventos"'
+            <input className="input" placeholder='ej. "Docena personalizada para eventos"'
               value={form.descripcion ?? ''}
               onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
             />
           </div>
 
-          {/* Precio */}
           <div>
             <label className="label">Precio promocional ($)</label>
-            <input
-              type="number" min="0" step="any" className="input"
-              placeholder="ej. 5000"
+            <input type="number" min="0" step="any" className="input" placeholder="ej. 5000"
               value={form.precio_promocional || ''}
               onChange={e => setForm(f => ({ ...f, precio_promocional: Number(e.target.value) }))}
             />
           </div>
 
-          {/* Upload de imagen */}
+          {/* Upload imagen */}
           <div>
             <label className="label">Flyer / Imagen *</label>
-
-            {/* Zona de drop / preview */}
             {previewUrl || form.imagen_url ? (
               <div className="relative rounded-2xl overflow-hidden border border-stone-100 aspect-[4/3] bg-stone-50">
-                <img
-                  src={previewUrl || form.imagen_url}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-                {/* Overlay mientras sube */}
+                <img src={previewUrl || form.imagen_url} alt="Preview" className="w-full h-full object-cover" />
                 {uploading && (
                   <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-2">
                     <Loader2 size={28} className="text-white animate-spin" />
                     <p className="text-white text-xs font-semibold">Subiendo imagen…</p>
                   </div>
                 )}
-                {/* Botón quitar */}
                 {!uploading && (
-                  <button
-                    type="button"
-                    onClick={clearImage}
+                  <button type="button" onClick={clearImage}
                     className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-colors"
                   >
                     <X size={14} />
                   </button>
                 )}
-                {/* Badge "subido" */}
                 {!uploading && form.imagen_url && (
                   <span className="absolute bottom-2 left-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">
                     ✓ Subida
@@ -192,33 +200,19 @@ export default function PromocionesPage() {
                 )}
               </div>
             ) : (
-              /* Zona de selección */
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
+              <button type="button" onClick={() => fileInputRef.current?.click()}
                 className="w-full aspect-[4/3] rounded-2xl border-2 border-dashed border-stone-200 hover:border-rose-300 bg-stone-50 hover:bg-rose-50/30 flex flex-col items-center justify-center gap-3 transition-all duration-200 group"
               >
                 <div className="w-12 h-12 bg-rose-100 group-hover:bg-rose-200 rounded-2xl flex items-center justify-center transition-colors">
                   <Upload size={22} className="text-rose-500" />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-stone-600 group-hover:text-rose-600 transition-colors">
-                    Subir flyer
-                  </p>
+                  <p className="text-sm font-semibold text-stone-600 group-hover:text-rose-600 transition-colors">Subir flyer</p>
                   <p className="text-xs text-stone-400 mt-0.5">JPG, PNG o WEBP · máx. 8 MB</p>
                 </div>
               </button>
             )}
-
-            {/* Input oculto */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             {uploadErr && (
               <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
                 <ImageOff size={11} /> {uploadErr}
@@ -226,11 +220,9 @@ export default function PromocionesPage() {
             )}
           </div>
 
-          {/* Toggle + botones */}
+          {/* Toggle activa + botones */}
           <div className="flex items-center justify-between pt-1">
-            <button
-              type="button"
-              onClick={() => setForm(f => ({ ...f, activa: !f.activa }))}
+            <button type="button" onClick={() => setForm(f => ({ ...f, activa: !f.activa }))}
               className="flex items-center gap-2 cursor-pointer"
             >
               <span className={`transition-colors ${form.activa ? 'text-rose-500' : 'text-stone-300'}`}>
@@ -240,21 +232,23 @@ export default function PromocionesPage() {
                 {form.activa ? 'Se publicará activa' : 'Guardar inactiva'}
               </span>
             </button>
-
             <div className="flex gap-2">
-              <button
-                type="button"
+              <button type="button"
                 onClick={() => { setShowForm(false); clearImage(); }}
                 className="text-xs text-stone-400 hover:text-stone-600 px-4 py-2 rounded-full border border-stone-200 transition-colors"
               >
                 Cancelar
               </button>
-              <button
-                type="submit"
-                disabled={!form.titulo.trim() || !form.imagen_url || uploading}
+              <button type="submit"
+                disabled={!form.titulo.trim() || !form.imagen_url || uploading || saving}
                 className="btn-primary text-xs px-5 py-2 rounded-full disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
               >
-                {uploading ? <><Loader2 size={12} className="animate-spin" /> Subiendo…</> : 'Guardar'}
+                {saving
+                  ? <><Loader2 size={12} className="animate-spin" /> Guardando…</>
+                  : uploading
+                    ? <><Loader2 size={12} className="animate-spin" /> Subiendo…</>
+                    : 'Guardar'
+                }
               </button>
             </div>
           </div>
@@ -262,7 +256,11 @@ export default function PromocionesPage() {
       )}
 
       {/* Lista */}
-      {promos.length === 0 && !showForm ? (
+      {loading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 size={24} className="animate-spin text-rose-300" />
+        </div>
+      ) : promos.length === 0 && !showForm ? (
         <div className="text-center py-16 bg-white/70 rounded-3xl border border-stone-100">
           <span className="text-5xl mb-3 block">🎁</span>
           <p className="text-stone-400 font-medium text-sm">Todavía no hay promociones</p>
@@ -271,7 +269,14 @@ export default function PromocionesPage() {
       ) : (
         <div className="space-y-3">
           {promos.map(promo => (
-            <PromoCard key={promo.id} promo={promo} onToggle={handleToggle} onDelete={handleDelete} />
+            <PromoCard
+              key={promo.id}
+              promo={promo}
+              toggling={togglingId === promo.id}
+              deleting={deletingId === promo.id}
+              onToggle={handleToggle}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}
@@ -279,10 +284,12 @@ export default function PromocionesPage() {
   );
 }
 
-// ── PromoCard (admin) ─────────────────────────────────────────────────────────
-function PromoCard({ promo, onToggle, onDelete }: {
+// ── PromoCard ─────────────────────────────────────────────────────────────────
+function PromoCard({ promo, toggling, deleting, onToggle, onDelete }: {
   promo: Promocion;
-  onToggle: (id: string) => void;
+  toggling: boolean;
+  deleting: boolean;
+  onToggle: (p: Promocion) => void;
   onDelete: (id: string) => void;
 }) {
   return (
@@ -314,15 +321,25 @@ function PromoCard({ promo, onToggle, onDelete }: {
           </div>
           <div className="flex items-center justify-between mt-2">
             <button
-              onClick={() => onToggle(promo.id)}
-              className={`flex items-center gap-1 text-xs font-semibold transition-colors ${
+              onClick={() => onToggle(promo)}
+              disabled={toggling}
+              className={`flex items-center gap-1 text-xs font-semibold transition-colors disabled:opacity-50 ${
                 promo.activa ? 'text-rose-500 hover:text-rose-700' : 'text-stone-400 hover:text-stone-600'
               }`}
             >
-              {promo.activa ? <><ToggleRight size={18} /> Desactivar</> : <><ToggleLeft size={18} /> Activar</>}
+              {toggling
+                ? <Loader2 size={14} className="animate-spin" />
+                : promo.activa
+                  ? <><ToggleRight size={18} /> Desactivar</>
+                  : <><ToggleLeft size={18} /> Activar</>
+              }
             </button>
-            <button onClick={() => onDelete(promo.id)} className="text-stone-300 hover:text-red-400 transition-colors p-1">
-              <Trash2 size={14} />
+            <button
+              onClick={() => onDelete(promo.id)}
+              disabled={deleting}
+              className="text-stone-300 hover:text-red-400 transition-colors p-1 disabled:opacity-50"
+            >
+              {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
             </button>
           </div>
         </div>

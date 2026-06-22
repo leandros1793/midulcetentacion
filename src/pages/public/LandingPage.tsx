@@ -61,11 +61,12 @@ export default function LandingPage() {
     let cancelled = false;
     async function load() {
       try {
-        const [ingredientes, recetas, allLineas, cfg] = await Promise.all([
+        const [ingredientes, recetas, allLineas, cfg, promoActivas] = await Promise.all([
           ingredientesService.getAll(),
           recetasService.getAll(),
           recetasService.getAllLineas(),
           configuracionService.get(),
+          promocionesService.getActivas(),
         ]);
         if (cancelled) return;
 
@@ -100,7 +101,7 @@ export default function LandingPage() {
         });
 
         setProductos(lista);
-        setPromos(promocionesService.getActivas()); // sigue siendo localStorage (sync)
+        setPromos(promoActivas);
       } catch (err) {
         console.error('[LandingPage] Error cargando datos:', err);
       }

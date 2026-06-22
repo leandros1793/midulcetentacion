@@ -1,39 +1,53 @@
-import { v4 as uuidv4 } from 'uuid';
-import * as storage from './storage';
+import { supabase } from '../lib/supabase';
 import type { Promocion, PromocionForm } from '../types';
 
-const KEY = 'mdt_promociones';
-
 export const promocionesService = {
-  getAll: (): Promocion[] =>
-    storage.getAll<Promocion>(KEY).sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    ),
-
-  getActivas: (): Promocion[] =>
-    storage.getAll<Promocion>(KEY).filter(p => p.activa),
-
-  create: (data: PromocionForm): Promocion => {
-    const item: Promocion = {
-      ...data,
-      id: uuidv4(),
-      created_at: new Date().toISOString(),
-    };
-    return storage.create<Promocion>(KEY, item);
+  getAll: async (): Promise<Promocion[]> => {
+    const { data, error } = await supabase
+      .from('promociones')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as Promocion[];
   },
 
-  toggleActiva: (id: string): Promocion | undefined => {
-    const item = storage.getById<Promocion>(KEY, id);
-    if (!item) return undefined;
-    const updated = { ...item, activa: !item.activa };
-    return storage.update<Promocion>(KEY, updated);
+  getActivas: async (): Promise<Promocion[]> => {
+    const { data, error } = await supabase
+      .from('promociones')
+      .select('*')
+      .eq('activa', true)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as Promocion[];
   },
 
-  update: (id: string, data: Partial<PromocionForm>): Promocion | undefined => {
-    const item = storage.getById<Promocion>(KEY, id);
-    if (!item) return undefined;
-    return storage.update<Promocion>(KEY, { ...item, ...data });
+  create: async (form: PromocionForm): Promise<Promocion> => {
+    const { data, error } = await supabase
+      .from('promociones')
+      .insert(form)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Promocion;
   },
 
-  remove: (id: string): void => storage.remove<Promocion>(KEY, id),
+  // Recibe el valor actual de `activa` para invertirlo sin un fetch previo
+  toggleActiva: async (id: string, activa: boolean): Promise<Promocion> => {
+    const { data, error } = await supabase
+      .from('promociones')
+      .update({ activa: !activa })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Promocion;
+  },
+
+  remove: async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from('promociones')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
 };

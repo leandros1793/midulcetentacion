@@ -2,13 +2,13 @@ import { useState, useRef, useEffect, useMemo, type ChangeEvent } from 'react';
 import {
   ChefHat, Plus, Trash2, Save, Clock, Users,
   Package, TrendingUp, Calculator, ShoppingBasket,
-  ArrowLeft, Info, ImagePlus, Loader2, Receipt, Search,
+  ArrowLeft, Info, ImagePlus, Loader2, Receipt, Search, ShoppingBag,
 } from 'lucide-react';
 import { ingredientesService, recetasService, configuracionService } from '../../services';
 import { uploadProductImage } from '../../services/supabase/uploadImage';
 import {
   calcCostoPorUnidadReceta, calcCostoLinea,
-  type Receta, type RecetaIngrediente, type Ingrediente,
+  type Receta, type RecetaIngrediente, type Ingrediente, type ModoVenta,
 } from '../../types';
 
 interface Props {
@@ -211,9 +211,31 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <ChefHat size={13} /> Detalles
           </h3>
+
+          {/* Modo de venta */}
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            {([
+              { value: 'entero',     label: 'Producto entero', icon: <Package size={13} /> },
+              { value: 'por_unidad', label: 'Por unidad',      icon: <ShoppingBag size={13} /> },
+            ] as { value: ModoVenta; label: string; icon: React.ReactNode }[]).map(opt => (
+              <button key={opt.value} type="button"
+                onClick={() => setReceta(r => ({ ...r, modo_venta: opt.value }))}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 text-xs font-bold transition-all ${
+                  receta.modo_venta === opt.value
+                    ? 'border-rose-300 bg-rose-50 text-rose-600'
+                    : 'border-stone-200 bg-stone-50 text-stone-400 hover:border-stone-300'
+                }`}
+              >
+                <span>{opt.icon}</span> {opt.label}
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="label">Porciones</label>
+              <label className="label">
+                {receta.modo_venta === 'por_unidad' ? 'Unidades' : 'Porciones'}
+              </label>
               <div className="relative">
                 <Users size={14} className="absolute left-2.5 top-2.5 text-gray-300" />
                 <input type="number" min="1" className="input pl-8"
@@ -506,6 +528,7 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
           onMargenChange={setMargen}
           tiempo={receta.tiempo_prep_minutos}
           porciones={receta.rinde_porciones}
+          modoVenta={receta.modo_venta ?? 'entero'}
           valorHora={config.valor_hora_trabajo}
           costoFijoHora={config.costo_fijo_por_hora}
         />
@@ -520,13 +543,13 @@ function CostBreakdownCard({
   costoIng, costoMO, costoFijo, costoPackaging, costoTotal,
   precioVenta, gananciaTotal, precioPorPorcion, costoPorcion,
   margen, onMargenChange,
-  tiempo, porciones, valorHora, costoFijoHora,
+  tiempo, porciones, modoVenta, valorHora, costoFijoHora,
 }: {
   costoIng: number; costoMO: number; costoFijo: number; costoPackaging: number;
   costoTotal: number; precioVenta: number; gananciaTotal: number;
   precioPorPorcion: number; costoPorcion: number;
   margen: number; onMargenChange: (v: number) => void;
-  tiempo: number; porciones: number; valorHora: number; costoFijoHora: number;
+  tiempo: number; porciones: number; modoVenta: ModoVenta; valorHora: number; costoFijoHora: number;
 }) {
   return (
     <div className="bg-amber-50/50 rounded-2xl border border-amber-100 shadow-[0_4px_24px_rgb(0,0,0,0.05)] overflow-hidden">
@@ -571,7 +594,9 @@ function CostBreakdownCard({
             <span className="text-base">💰</span>
             <div>
               <p className="text-sm font-bold text-stone-700">Costo base total</p>
-              <p className="text-[10px] text-stone-400">{formatARS(costoPorcion)} por porción</p>
+              <p className="text-[10px] text-stone-400">
+                {formatARS(costoPorcion)} por {modoVenta === 'por_unidad' ? 'unidad' : 'porción'}
+              </p>
             </div>
           </div>
           <span className="text-xl font-black text-stone-800 tabular-nums">
@@ -636,19 +661,36 @@ function CostBreakdownCard({
 
       {/* ── Precio final ── zona destacada ── */}
       <div className="bg-rose-50 border-t border-rose-100 px-5 py-5 text-center">
-        <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2 flex items-center justify-center gap-1.5">
-          🏷️ Precio de venta sugerido
-        </p>
-        <p className="text-3xl font-bold text-stone-800 tracking-tight tabular-nums">
-          {formatARS(precioVenta)}
-        </p>
-        <p className="text-xs text-stone-400 mt-1.5 flex items-center justify-center gap-2">
-          <span>{formatARS(precioPorPorcion)} por porción</span>
-          <span className="text-stone-300">·</span>
-          <span>{porciones} porciones</span>
-        </p>
+        {modoVenta === 'por_unidad' ? (
+          /* Por unidad: el número grande es el precio POR UNIDAD */
+          <>
+            <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2">
+              🏷️ Precio por unidad
+            </p>
+            <p className="text-3xl font-black text-stone-800 tracking-tight tabular-nums">
+              {formatARS(precioPorPorcion)}
+            </p>
+            <p className="text-xs text-stone-400 mt-1.5">
+              × {porciones} {porciones === 1 ? 'unidad' : 'unidades'} = <span className="font-semibold text-stone-500">{formatARS(precioVenta)}</span> el lote
+            </p>
+          </>
+        ) : (
+          /* Producto entero: el número grande es el precio TOTAL */
+          <>
+            <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2">
+              🏷️ Precio de venta sugerido
+            </p>
+            <p className="text-3xl font-black text-stone-800 tracking-tight tabular-nums">
+              {formatARS(precioVenta)}
+            </p>
+            <p className="text-xs text-stone-400 mt-1.5 flex items-center justify-center gap-2">
+              <span>{formatARS(precioPorPorcion)} por porción</span>
+              <span className="text-stone-300">·</span>
+              <span>{porciones} porciones</span>
+            </p>
+          </>
+        )}
 
-        {/* Tip de configuración */}
         <p className="text-[10px] text-rose-300 flex items-center justify-center gap-1 mt-3">
           <Info size={9} />
           Hora trabajo: {formatARS(valorHora)} · Costo fijo/h: {formatARS(costoFijoHora)}

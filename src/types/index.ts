@@ -49,10 +49,13 @@ export function calcCostoLinea(ri: RecetaIngrediente, ing: Ingrediente): number 
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+export type ModoVenta = 'entero' | 'por_unidad';
+
 export interface Receta {
   id: string;
   nombre: string;
   rinde_porciones: number;
+  modo_venta: ModoVenta;               // 'entero' = se vende todo junto | 'por_unidad' = cada unidad por separado
   tiempo_prep_minutos: number;
   costo_packaging_fijo: number;
   margen_ganancia_porcentaje: number;  // ej. 150 = markup del 150%

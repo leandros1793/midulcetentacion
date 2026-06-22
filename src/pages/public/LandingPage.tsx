@@ -32,6 +32,7 @@ const CAKE_EMOJIS = ['🎂', '🍰', '🧁', '🥧', '🍮', '🎁', '🌸', '�
 
 interface ProductoConPrecio extends Receta {
   precioVenta: number;
+  precioVentaPorUnidad: number;  // precioVenta / rinde_porciones
   emoji: string;
 }
 
@@ -97,7 +98,8 @@ export default function LandingPage() {
             + h * cfg.costo_fijo_por_hora
             + receta.costo_packaging_fijo;
           const precioVenta = costoTotal * (1 + receta.margen_ganancia_porcentaje / 100);
-          return { ...receta, precioVenta, emoji: CAKE_EMOJIS[idx % CAKE_EMOJIS.length] };
+          const precioVentaPorUnidad = precioVenta / (receta.rinde_porciones || 1);
+          return { ...receta, precioVenta, precioVentaPorUnidad, emoji: CAKE_EMOJIS[idx % CAKE_EMOJIS.length] };
         });
 
         setProductos(lista);
@@ -576,7 +578,7 @@ function ProductCard({ producto, whatsappNumero }: {
               <Clock size={9} /> {producto.tiempo_prep_minutos} min
             </span>
             <span>·</span>
-            <span>{producto.rinde_porciones} porciones</span>
+            <span>{producto.rinde_porciones} {producto.modo_venta === 'por_unidad' ? 'unidades' : 'porciones'}</span>
           </div>
           {producto.notas && (
             <p className="text-xs text-stone-400 line-clamp-2 leading-relaxed">{producto.notas}</p>
@@ -585,10 +587,24 @@ function ProductCard({ producto, whatsappNumero }: {
 
         <div className="flex items-end justify-between mt-3 gap-2">
           <div>
-            <p className="text-[9px] text-stone-400 uppercase tracking-widest font-semibold mb-0.5">Precio</p>
-            <p className="text-lg font-extrabold text-rose-500 tracking-tight leading-none">
-              {formatARS(producto.precioVenta)}
-            </p>
+            {producto.modo_venta === 'por_unidad' ? (
+              <>
+                <p className="text-[9px] text-stone-400 uppercase tracking-widest font-semibold mb-0.5">Por unidad</p>
+                <p className="text-lg font-extrabold text-rose-500 tracking-tight leading-none">
+                  {formatARS(producto.precioVentaPorUnidad)}
+                </p>
+                <p className="text-[9px] text-stone-300 mt-0.5">
+                  × {producto.rinde_porciones} = {formatARS(producto.precioVenta)}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-[9px] text-stone-400 uppercase tracking-widest font-semibold mb-0.5">Precio</p>
+                <p className="text-lg font-extrabold text-rose-500 tracking-tight leading-none">
+                  {formatARS(producto.precioVenta)}
+                </p>
+              </>
+            )}
           </div>
           <a
             href={whatsappUrl}

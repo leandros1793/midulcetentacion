@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, BookOpen, Clock, Users, Pencil, Trash2, Loader2, Globe, Lock } from 'lucide-react';
+import { Plus, BookOpen, Clock, Users, Pencil, Trash2, Loader2, Globe, Lock, ShoppingBag, Package } from 'lucide-react';
+import type { ModoVenta } from '../../types';
 import { recetasService } from '../../services';
 import type { Receta, RecetaForm } from '../../types';
 import Modal from '../../components/ui/Modal';
@@ -8,7 +9,8 @@ import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import RecetaBuilder from './RecetaBuilder';
 
 const DEFAULT_FORM: RecetaForm = {
-  nombre: '', rinde_porciones: 12, tiempo_prep_minutos: 60,
+  nombre: '', rinde_porciones: 1, tiempo_prep_minutos: 60,
+  modo_venta: 'entero',
   costo_packaging_fijo: 0, margen_ganancia_porcentaje: 150, notas: '',
   visible_en_catalogo: false,
 };
@@ -104,7 +106,7 @@ export default function RecetasPage() {
                     }
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray-400 mt-0.5">
-                    <span className="flex items-center gap-1"><Users size={10} />{r.rinde_porciones} porciones</span>
+                    <span className="flex items-center gap-1"><Users size={10} />{r.rinde_porciones} {r.modo_venta === 'por_unidad' ? 'unidades' : 'porciones'}</span>
                     <span className="flex items-center gap-1"><Clock size={10} />{r.tiempo_prep_minutos} min</span>
                   </div>
                 </div>
@@ -137,9 +139,39 @@ export default function RecetasPage() {
             <input className="input" placeholder="ej. Cheesecake de Frutos Rojos"
               value={form.nombre} onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))} />
           </div>
+          {/* Modo de venta */}
+          <div>
+            <label className="label">¿Cómo se vende?</label>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { value: 'entero',     label: 'Producto entero', sub: 'Una torta, un flan…', icon: <Package size={15} /> },
+                { value: 'por_unidad', label: 'Por unidad',      sub: 'Lemon pies, alfajores…', icon: <ShoppingBag size={15} /> },
+              ] as { value: ModoVenta; label: string; sub: string; icon: React.ReactNode }[]).map(opt => (
+                <button key={opt.value} type="button"
+                  onClick={() => setForm(f => ({ ...f, modo_venta: opt.value }))}
+                  className={`flex flex-col items-start gap-1 p-3 rounded-2xl border-2 text-left transition-all ${
+                    form.modo_venta === opt.value
+                      ? 'border-rose-300 bg-rose-50/60'
+                      : 'border-stone-200 bg-stone-50/40 hover:border-stone-300'
+                  }`}
+                >
+                  <span className={form.modo_venta === opt.value ? 'text-rose-500' : 'text-stone-400'}>
+                    {opt.icon}
+                  </span>
+                  <span className={`text-xs font-bold leading-tight ${form.modo_venta === opt.value ? 'text-rose-600' : 'text-stone-600'}`}>
+                    {opt.label}
+                  </span>
+                  <span className="text-[10px] text-stone-400 leading-tight">{opt.sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label">Porciones</label>
+              <label className="label">
+                {form.modo_venta === 'por_unidad' ? 'Rinde (unidades)' : 'Rinde (porciones)'}
+              </label>
               <input type="number" min="1" className="input"
                 value={form.rinde_porciones || ''} onChange={e => setForm(f => ({ ...f, rinde_porciones: Number(e.target.value) }))} />
             </div>

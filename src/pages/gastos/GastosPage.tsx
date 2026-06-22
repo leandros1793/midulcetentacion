@@ -5,6 +5,7 @@ import type { GastoGeneral, GastoForm, CategoriaGasto } from '../../types';
 import Modal from '../../components/ui/Modal';
 import EmptyState from '../../components/ui/EmptyState';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { formatARS as _fmt } from '../../utils/format';
 
 const CATEGORIAS: { value: string; label: string }[] = [
   { value: 'Fijo',     label: 'Fijo (alquiler, servicios básicos)' },
@@ -16,9 +17,7 @@ const DEFAULT_FORM: GastoForm = {
   fecha: new Date().toISOString().split('T')[0],
 };
 
-function formatARS(n: number) {
-  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n);
-}
+function formatARS(n: number) { return _fmt(n, 0); }
 
 export default function GastosPage() {
   const [gastos,   setGastos]   = useState<GastoGeneral[]>([]);

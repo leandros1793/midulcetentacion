@@ -5,11 +5,12 @@ interface Props {
   open: boolean;
   title: string;
   message: string;
+  confirmLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-export default function ConfirmDialog({ open, title, message, onConfirm, onCancel }: Props) {
+export default function ConfirmDialog({ open, title, message, confirmLabel = 'Eliminar', onConfirm, onCancel }: Props) {
   return (
     <Modal open={open} onClose={onCancel} title={title}>
       <div className="flex gap-3 mb-5">
@@ -18,7 +19,7 @@ export default function ConfirmDialog({ open, title, message, onConfirm, onCance
       </div>
       <div className="flex gap-3">
         <button onClick={onCancel} className="btn-secondary flex-1 justify-center">Cancelar</button>
-        <button onClick={onConfirm} className="btn-danger flex-1 justify-center">Eliminar</button>
+        <button onClick={onConfirm} className="btn-danger flex-1 justify-center">{confirmLabel}</button>
       </div>
     </Modal>
   );

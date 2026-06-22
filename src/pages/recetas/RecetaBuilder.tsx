@@ -3,6 +3,7 @@ import {
   ChefHat, Plus, Trash2, Save, Clock, Users,
   Package, TrendingUp, Calculator, ShoppingBasket,
   ArrowLeft, Info, ImagePlus, Loader2, Receipt, Search, ShoppingBag,
+  Globe, Lock,
 } from 'lucide-react';
 import { ingredientesService, recetasService, configuracionService } from '../../services';
 import { uploadProductImage } from '../../services/supabase/uploadImage';
@@ -10,6 +11,7 @@ import {
   calcCostoPorUnidadReceta, calcCostoLinea,
   type Receta, type RecetaIngrediente, type Ingrediente, type ModoVenta,
 } from '../../types';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
 interface Props {
   receta: Receta;
@@ -17,9 +19,7 @@ interface Props {
   onSave: (receta: Receta) => void;
 }
 
-function formatARS(n: number) {
-  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 2 }).format(n);
-}
+import { formatARS } from '../../utils/format';
 
 export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props) {
   const [receta,   setReceta]   = useState<Receta>(initial);
@@ -35,6 +35,8 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
   const [saving,       setSaving]       = useState(false);
   const [uploadingImg, setUploadingImg] = useState(false);
   const [imgError,     setImgError]     = useState('');
+  const [confirmBack,  setConfirmBack]  = useState(false);
+  const [lineaError,   setLineaError]   = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [ingredientes, setIngredientes] = useState<Ingrediente[]>([]);
@@ -115,6 +117,7 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
   const handleAddLinea = async () => {
     if (!newIngId || !newCantidad || Number(newCantidad) <= 0) return;
     setAddingLinea(true);
+    setLineaError('');
     try {
       const li = await recetasService.addLinea(receta.id, {
         ingrediente_id: newIngId,
@@ -122,6 +125,8 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
       });
       setLineas(prev => [...prev, li]);
       setNewIngId(''); setNewCantidad('');
+    } catch {
+      setLineaError('No se pudo agregar el ingrediente. Verificá la conexión.');
     } finally {
       setAddingLinea(false);
     }
@@ -129,9 +134,12 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
 
   const handleDeleteLinea = async (id: string) => {
     setDeletingId(id);
+    setLineaError('');
     try {
       await recetasService.deleteLinea(id);
       setLineas(prev => prev.filter(l => l.id !== id));
+    } catch {
+      setLineaError('No se pudo eliminar el ingrediente. Intentá de nuevo.');
     } finally {
       setDeletingId(null);
     }
@@ -139,16 +147,20 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
 
   const handleUpdateLinea = async (li: RecetaIngrediente) => {
     const val = Number(editingCantidad);
-    if (val > 0) {
+    setEditingLineaId(null);
+    setEditingCantidad('');
+    if (val <= 0) return;
+    setLineaError('');
+    try {
       const updated = await recetasService.updateLinea(li.id, {
         ingrediente_id: li.ingrediente_id,
         cantidad_usada: val,
         receta_id: li.receta_id,
       });
       setLineas(prev => prev.map(l => l.id === li.id ? updated : l));
+    } catch {
+      setLineaError('No se pudo actualizar la cantidad. Intentá de nuevo.');
     }
-    setEditingLineaId(null);
-    setEditingCantidad('');
   };
 
   const handleSave = async () => {
@@ -183,7 +195,7 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
               receta.costo_packaging_fijo !== initial.costo_packaging_fijo ||
               (receta.notas ?? '') !== (initial.notas ?? '') ||
               margen !== initial.margen_ganancia_porcentaje;
-            if (hayDirty && !window.confirm('¿Salir sin guardar los cambios?')) return;
+            if (hayDirty) { setConfirmBack(true); return; }
             onBack();
           }}
           className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -309,17 +321,28 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
               {imgError && <p className="text-xs text-red-500 mt-1">{imgError}</p>}
             </div>
           </div>
-          <div className="flex items-center gap-2 mt-3">
-            <input
-              type="checkbox"
-              id="visible"
-              checked={receta.visible_en_catalogo !== false}
-              onChange={e => setReceta(r => ({ ...r, visible_en_catalogo: e.target.checked }))}
-              className="accent-rose-500"
-            />
-            <label htmlFor="visible" className="text-xs text-gray-600">
-              Mostrar en el catálogo público (landing page)
-            </label>
+          <div className="mt-3">
+            <label className="label">Visibilidad</label>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { value: false, label: 'Solo interna', icon: <Lock size={13} /> },
+                { value: true,  label: 'En catálogo',  icon: <Globe size={13} /> },
+              ] as { value: boolean; label: string; icon: React.ReactNode }[]).map(opt => (
+                <button key={String(opt.value)} type="button"
+                  onClick={() => setReceta(r => ({ ...r, visible_en_catalogo: opt.value }))}
+                  className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl border-2 text-xs font-semibold transition-all ${
+                    (receta.visible_en_catalogo ?? false) === opt.value
+                      ? opt.value
+                        ? 'border-rose-300 bg-rose-50/60 text-rose-600'
+                        : 'border-stone-300 bg-stone-100/60 text-stone-600'
+                      : 'border-stone-200 bg-stone-50/40 text-stone-400 hover:border-stone-300'
+                  }`}
+                >
+                  {opt.icon}
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -424,7 +447,7 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
                     <button
                       onClick={() => handleDeleteLinea(li.id)}
                       disabled={deletingId === li.id}
-                      className="w-7 h-7 rounded-xl flex items-center justify-center text-stone-300 hover:bg-red-50 hover:text-red-400 transition-all duration-150 opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                      className="w-7 h-7 rounded-xl flex items-center justify-center text-stone-300 hover:bg-red-50 hover:text-red-400 transition-all duration-150 disabled:opacity-50"
                     >
                       {deletingId === li.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
                     </button>
@@ -499,6 +522,11 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
                 {addingLinea ? 'Agregando…' : 'Agregar a la receta'}
               </button>
 
+              {lineaError && (
+                <p className="text-[10px] text-red-500 bg-red-50 rounded-lg px-2.5 py-1.5 text-center">
+                  ⚠️ {lineaError}
+                </p>
+              )}
               {ingDisponibles.length === 0 && ingredientes.length > 0 && (
                 <p className="text-[10px] text-center text-stone-400">
                   ✓ Todos los ingredientes ya están en la receta
@@ -534,6 +562,15 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
         />
 
       </div>
+
+      <ConfirmDialog
+        open={confirmBack}
+        title="¿Salir sin guardar?"
+        message="Tenés cambios sin guardar. Si salís ahora se van a perder."
+        confirmLabel="Salir igual"
+        onConfirm={() => { setConfirmBack(false); onBack(); }}
+        onCancel={() => setConfirmBack(false)}
+      />
     </div>
   );
 }

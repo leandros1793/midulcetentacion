@@ -7,10 +7,8 @@ import {
 import { ingredientesService, recetasService, gastosService, configuracionService } from '../../services';
 import { calcCostoLinea } from '../../types';
 import type { Ingrediente, Receta, RecetaIngrediente, GastoGeneral } from '../../types';
-
-function formatARS(n: number) {
-  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n);
-}
+import { formatARS as _fmt } from '../../utils/format';
+function formatARS(n: number) { return _fmt(n, 0); }
 
 interface DashboardStats {
   numIngredientes: number;
@@ -42,10 +40,15 @@ function calcStats(
       + horasPrep * config.costo_fijo_por_hora
       + receta.costo_packaging_fijo;
     const precioVenta = costoTotal * (1 + receta.margen_ganancia_porcentaje / 100);
-    return { receta, costoTotal, precioVenta, ganancia: precioVenta - costoTotal };
+    const unidades = Math.max(receta.rinde_porciones, 1);
+    // Para por_unidad, la ganancia representativa es por unidad (lo que realmente "vale" cada pieza)
+    const ganancia = receta.modo_venta === 'por_unidad'
+      ? (precioVenta - costoTotal) / unidades
+      : precioVenta - costoTotal;
+    return { receta, costoTotal, precioVenta, ganancia };
   });
 
-  const masRentable = rentabilidades.sort((a, b) => b.ganancia - a.ganancia)[0] ?? null;
+  const masRentable = [...rentabilidades].sort((a, b) => b.ganancia - a.ganancia)[0] ?? null;
   return { numIngredientes: ingredientes.length, numRecetas: recetas.length,
     numGastos: gastosDelMes.length, totalGastosGenerales, masRentable };
 }
@@ -147,7 +150,9 @@ export default function DashboardPage() {
                     <p className="text-sm font-semibold text-rose-600">{formatARS(stats.masRentable.precioVenta)}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">Ganancia</p>
+                    <p className="text-xs text-gray-400">
+                      {stats.masRentable.receta.modo_venta === 'por_unidad' ? 'Ganancia/unidad' : 'Ganancia'}
+                    </p>
                     <p className="text-sm font-semibold text-emerald-600">{formatARS(stats.masRentable.ganancia)}</p>
                   </div>
                 </div>

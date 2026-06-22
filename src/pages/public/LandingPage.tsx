@@ -15,11 +15,8 @@ function WhatsAppIcon({ size = 20 }: { size?: number }) {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function formatARS(n: number) {
-  return new Intl.NumberFormat('es-AR', {
-    style: 'currency', currency: 'ARS', maximumFractionDigits: 0,
-  }).format(n);
-}
+import { formatARS as _fmt } from '../../utils/format';
+function formatARS(n: number) { return _fmt(n, 0); }
 
 function buildWhatsAppLink(numero: string, nombreProducto: string) {
   const texto = encodeURIComponent(

@@ -47,10 +47,8 @@ const DEFAULT_FORM: IngredienteForm = {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatARS(n: number) {
-  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 4 }).format(n);
-}
+import { formatARS as _fmt } from '../../utils/format';
+function formatARS(n: number) { return _fmt(n, 4); }
 
 function singularUnit(u: string): string {
   const map: Record<string, string> = {

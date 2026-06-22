@@ -16,6 +16,7 @@ import RecetasPage        from './pages/recetas/RecetasPage';
 import GastosPage         from './pages/gastos/GastosPage';
 import ConfiguracionPage  from './pages/configuracion/ConfiguracionPage';
 import PromocionesPage    from './pages/promociones/PromocionesPage';
+import ErrorBoundary      from './components/ui/ErrorBoundary';
 
 export default function App() {
   return (
@@ -23,18 +24,18 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           {/* ── Rutas públicas ────────────────────────────────────────────── */}
-          <Route path="/"      element={<LandingPage />} />
+          <Route path="/"      element={<ErrorBoundary><LandingPage /></ErrorBoundary>} />
           <Route path="/login" element={<LoginPage />} />
 
           {/* ── Rutas protegidas (requieren sesión Supabase) ──────────────── */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<AppShell />}>
-              <Route index                   element={<DashboardPage />} />
-              <Route path="ingredientes"     element={<IngredientesPage />} />
-              <Route path="recetas"          element={<RecetasPage />} />
-              <Route path="gastos"           element={<GastosPage />} />
-              <Route path="configuracion"    element={<ConfiguracionPage />} />
-              <Route path="promociones"      element={<PromocionesPage />} />
+              <Route index               element={<ErrorBoundary><DashboardPage /></ErrorBoundary>} />
+              <Route path="ingredientes" element={<ErrorBoundary><IngredientesPage /></ErrorBoundary>} />
+              <Route path="recetas"      element={<ErrorBoundary><RecetasPage /></ErrorBoundary>} />
+              <Route path="gastos"       element={<ErrorBoundary><GastosPage /></ErrorBoundary>} />
+              <Route path="configuracion" element={<ErrorBoundary><ConfiguracionPage /></ErrorBoundary>} />
+              <Route path="promociones"  element={<ErrorBoundary><PromocionesPage /></ErrorBoundary>} />
             </Route>
           </Route>
 

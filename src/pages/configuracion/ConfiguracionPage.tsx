@@ -2,10 +2,8 @@ import { useState, useEffect } from 'react';
 import { Settings, Save, Info, MessageCircle, ExternalLink, Instagram, Link2, Loader2 } from 'lucide-react';
 import { configuracionService } from '../../services';
 import type { Configuracion } from '../../types';
-
-function formatARS(n: number) {
-  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n);
-}
+import { formatARS as _fmt } from '../../utils/format';
+function formatARS(n: number) { return _fmt(n, 0); }
 
 // Valores iniciales mientras carga Supabase (evita estado null)
 const DEFAULT_CONFIG: Configuracion = {

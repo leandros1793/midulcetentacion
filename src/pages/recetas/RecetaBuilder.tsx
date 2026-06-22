@@ -217,7 +217,7 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
               <div className="relative">
                 <Users size={14} className="absolute left-2.5 top-2.5 text-gray-300" />
                 <input type="number" min="1" className="input pl-8"
-                  value={receta.rinde_porciones}
+                  value={receta.rinde_porciones || ''}
                   onChange={e => setReceta(r => ({ ...r, rinde_porciones: Number(e.target.value) }))}
                 />
               </div>
@@ -227,7 +227,7 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
               <div className="relative">
                 <Clock size={14} className="absolute left-2.5 top-2.5 text-gray-300" />
                 <input type="number" min="0" className="input pl-8"
-                  value={receta.tiempo_prep_minutos}
+                  value={receta.tiempo_prep_minutos || ''}
                   onChange={e => setReceta(r => ({ ...r, tiempo_prep_minutos: Number(e.target.value) }))}
                 />
               </div>
@@ -237,7 +237,7 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
               <div className="relative">
                 <Package size={14} className="absolute left-2.5 top-2.5 text-gray-300" />
                 <input type="number" min="0" className="input pl-8"
-                  value={receta.costo_packaging_fijo}
+                  value={receta.costo_packaging_fijo || ''}
                   onChange={e => setReceta(r => ({ ...r, costo_packaging_fijo: Number(e.target.value) }))}
                 />
               </div>

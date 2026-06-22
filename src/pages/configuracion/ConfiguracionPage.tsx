@@ -90,7 +90,7 @@ export default function ConfiguracionPage() {
         <div>
           <label className="label">Valor hora de trabajo ($)</label>
           <input type="number" min="0" step="any" className="input"
-            value={config.valor_hora_trabajo}
+            value={config.valor_hora_trabajo || ''}
             onChange={e => setConfig(c => ({ ...c, valor_hora_trabajo: Number(e.target.value) }))} />
           <p className="text-xs text-stone-400 mt-1 flex items-center gap-1">
             <Info size={10} /> Cuánto vale 1 hora de tu trabajo personal.
@@ -100,7 +100,7 @@ export default function ConfiguracionPage() {
         <div>
           <label className="label">Costo fijo por hora ($)</label>
           <input type="number" min="0" step="any" className="input"
-            value={config.costo_fijo_por_hora}
+            value={config.costo_fijo_por_hora || ''}
             onChange={e => setConfig(c => ({ ...c, costo_fijo_por_hora: Number(e.target.value) }))} />
           <p className="text-xs text-stone-400 mt-1 flex items-center gap-1">
             <Info size={10} /> Alquiler + servicios ÷ horas trabajadas al mes.

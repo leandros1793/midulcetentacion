@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, BookOpen, Clock, Users, ChevronRight, Trash2, Loader2 } from 'lucide-react';
+import { Plus, BookOpen, Clock, Users, ChevronRight, Trash2, Loader2, Globe, Lock } from 'lucide-react';
 import { recetasService } from '../../services';
 import type { Receta, RecetaForm } from '../../types';
 import Modal from '../../components/ui/Modal';
@@ -10,6 +10,7 @@ import RecetaBuilder from './RecetaBuilder';
 const DEFAULT_FORM: RecetaForm = {
   nombre: '', rinde_porciones: 12, tiempo_prep_minutos: 60,
   costo_packaging_fijo: 0, margen_ganancia_porcentaje: 150, notas: '',
+  visible_en_catalogo: false,
 };
 
 export default function RecetasPage() {
@@ -94,7 +95,13 @@ export default function RecetasPage() {
                   <BookOpen size={18} className="text-violet-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-800 text-sm truncate">{r.nombre}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-gray-800 text-sm truncate">{r.nombre}</p>
+                    {r.visible_en_catalogo
+                      ? <span className="shrink-0 inline-flex items-center gap-0.5 text-[9px] font-bold bg-rose-100 text-rose-500 px-1.5 py-0.5 rounded-full"><Globe size={8} /> Pública</span>
+                      : <span className="shrink-0 inline-flex items-center gap-0.5 text-[9px] font-bold bg-stone-100 text-stone-400 px-1.5 py-0.5 rounded-full"><Lock size={8} /> Privada</span>
+                    }
+                  </div>
                   <div className="flex items-center gap-3 text-xs text-gray-400 mt-0.5">
                     <span className="flex items-center gap-1"><Users size={10} />{r.rinde_porciones} porciones</span>
                     <span className="flex items-center gap-1"><Clock size={10} />{r.tiempo_prep_minutos} min</span>
@@ -122,24 +129,24 @@ export default function RecetasPage() {
             <div>
               <label className="label">Porciones</label>
               <input type="number" min="1" className="input"
-                value={form.rinde_porciones} onChange={e => setForm(f => ({ ...f, rinde_porciones: Number(e.target.value) }))} />
+                value={form.rinde_porciones || ''} onChange={e => setForm(f => ({ ...f, rinde_porciones: Number(e.target.value) }))} />
             </div>
             <div>
               <label className="label">Tiempo (min)</label>
               <input type="number" min="0" className="input"
-                value={form.tiempo_prep_minutos} onChange={e => setForm(f => ({ ...f, tiempo_prep_minutos: Number(e.target.value) }))} />
+                value={form.tiempo_prep_minutos || ''} onChange={e => setForm(f => ({ ...f, tiempo_prep_minutos: Number(e.target.value) }))} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="label">Empaque ($)</label>
               <input type="number" min="0" className="input"
-                value={form.costo_packaging_fijo} onChange={e => setForm(f => ({ ...f, costo_packaging_fijo: Number(e.target.value) }))} />
+                value={form.costo_packaging_fijo || ''} onChange={e => setForm(f => ({ ...f, costo_packaging_fijo: Number(e.target.value) }))} />
             </div>
             <div>
-              <label className="label">Margen de Ganancia (%)</label>
+              <label className="label">Margen (%)</label>
               <input type="number" min="0" className="input"
-                value={form.margen_ganancia_porcentaje} onChange={e => setForm(f => ({ ...f, margen_ganancia_porcentaje: Number(e.target.value) }))} />
+                value={form.margen_ganancia_porcentaje || ''} onChange={e => setForm(f => ({ ...f, margen_ganancia_porcentaje: Number(e.target.value) }))} />
             </div>
           </div>
           <div>
@@ -147,7 +154,38 @@ export default function RecetasPage() {
             <textarea className="input resize-none" rows={2}
               value={form.notas} onChange={e => setForm(f => ({ ...f, notas: e.target.value }))} />
           </div>
-          <button onClick={handleCreate} disabled={creating || !form.nombre.trim()} className="btn-primary w-full justify-center mt-2">
+
+          {/* Visibilidad en catálogo */}
+          <button
+            type="button"
+            onClick={() => setForm(f => ({ ...f, visible_en_catalogo: !f.visible_en_catalogo }))}
+            className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all duration-200 ${
+              form.visible_en_catalogo
+                ? 'border-rose-200 bg-rose-50/60'
+                : 'border-stone-200 bg-stone-50/60'
+            }`}
+          >
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+              form.visible_en_catalogo ? 'bg-rose-500' : 'bg-stone-200'
+            }`}>
+              {form.visible_en_catalogo
+                ? <Globe size={16} className="text-white" />
+                : <Lock size={16} className="text-stone-400" />
+              }
+            </div>
+            <div className="text-left">
+              <p className={`text-sm font-bold ${form.visible_en_catalogo ? 'text-rose-600' : 'text-stone-500'}`}>
+                {form.visible_en_catalogo ? 'Publicar en el catálogo' : 'Solo para las pasteleras'}
+              </p>
+              <p className="text-xs text-stone-400 mt-0.5">
+                {form.visible_en_catalogo
+                  ? 'Los clientes van a ver esta receta en la landing'
+                  : 'No aparece en la página pública, solo en el panel'}
+              </p>
+            </div>
+          </button>
+
+          <button onClick={handleCreate} disabled={creating || !form.nombre.trim()} className="btn-primary w-full justify-center mt-1">
             {creating ? <><Loader2 size={14} className="animate-spin" /> Creando…</> : 'Crear y calcular costos →'}
           </button>
         </div>

@@ -9,6 +9,7 @@ import {
 import Modal from '../../components/ui/Modal';
 import EmptyState from '../../components/ui/EmptyState';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { formatARS as _fmt } from '../../utils/format';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -47,7 +48,6 @@ const DEFAULT_FORM: IngredienteForm = {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-import { formatARS as _fmt } from '../../utils/format';
 function formatARS(n: number) { return _fmt(n, 4); }
 
 function singularUnit(u: string): string {

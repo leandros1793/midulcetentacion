@@ -4,6 +4,7 @@ import { ShoppingBag, Clock, Star, Heart, Sparkles, Flame, Tag, Instagram, Exter
 import { ingredientesService, recetasService, configuracionService, promocionesService } from '../../services';
 import { calcCostoLinea } from '../../types';
 import type { Receta, Promocion } from '../../types';
+import { formatARS as _fmt } from '../../utils/format';
 
 // ── WhatsApp SVG Icon ─────────────────────────────────────────────────────────
 function WhatsAppIcon({ size = 20 }: { size?: number }) {
@@ -15,7 +16,6 @@ function WhatsAppIcon({ size = 20 }: { size?: number }) {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-import { formatARS as _fmt } from '../../utils/format';
 function formatARS(n: number) { return _fmt(n, 0); }
 
 function buildWhatsAppLink(numero: string, nombreProducto: string) {

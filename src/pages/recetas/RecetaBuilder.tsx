@@ -12,14 +12,13 @@ import {
   type Receta, type RecetaIngrediente, type Ingrediente, type ModoVenta,
 } from '../../types';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { formatARS } from '../../utils/format';
 
 interface Props {
   receta: Receta;
   onBack: () => void;
   onSave: (receta: Receta) => void;
 }
-
-import { formatARS } from '../../utils/format';
 
 export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props) {
   const [receta,   setReceta]   = useState<Receta>(initial);

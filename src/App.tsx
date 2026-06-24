@@ -16,6 +16,8 @@ import RecetasPage        from './pages/recetas/RecetasPage';
 import GastosPage         from './pages/gastos/GastosPage';
 import ConfiguracionPage  from './pages/configuracion/ConfiguracionPage';
 import PromocionesPage    from './pages/promociones/PromocionesPage';
+import PedidosPage        from './pages/pedidos/PedidosPage';
+import ReporteMensualPage from './pages/reportes/ReporteMensualPage';
 import ErrorBoundary      from './components/ui/ErrorBoundary';
 
 export default function App() {
@@ -36,6 +38,8 @@ export default function App() {
               <Route path="gastos"       element={<ErrorBoundary><GastosPage /></ErrorBoundary>} />
               <Route path="configuracion" element={<ErrorBoundary><ConfiguracionPage /></ErrorBoundary>} />
               <Route path="promociones"  element={<ErrorBoundary><PromocionesPage /></ErrorBoundary>} />
+              <Route path="pedidos"      element={<ErrorBoundary><PedidosPage /></ErrorBoundary>} />
+              <Route path="reporte"      element={<ErrorBoundary><ReporteMensualPage /></ErrorBoundary>} />
             </Route>
           </Route>
 

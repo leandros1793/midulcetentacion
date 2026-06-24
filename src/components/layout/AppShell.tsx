@@ -1,16 +1,16 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingBasket, BookOpen,
-  Settings, ChefHat, LogOut, Megaphone,
+  Settings, ChefHat, LogOut, ShoppingBag, BarChart2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const NAV = [
-  { to: '/dashboard',               icon: LayoutDashboard, label: 'Inicio'       },
-  { to: '/dashboard/ingredientes',  icon: ShoppingBasket,  label: 'Ingredientes' },
-  { to: '/dashboard/recetas',       icon: BookOpen,        label: 'Recetas'      },
-  { to: '/dashboard/promociones',   icon: Megaphone,       label: 'Promos'       },
-  { to: '/dashboard/configuracion', icon: Settings,        label: 'Config'       },
+  { to: '/dashboard',               icon: LayoutDashboard, label: 'Inicio'    },
+  { to: '/dashboard/pedidos',       icon: ShoppingBag,     label: 'Pedidos'   },
+  { to: '/dashboard/recetas',       icon: BookOpen,        label: 'Recetas'   },
+  { to: '/dashboard/reporte',       icon: BarChart2,       label: 'Reporte'   },
+  { to: '/dashboard/configuracion', icon: Settings,        label: 'Config'    },
 ];
 
 export default function AppShell() {
@@ -18,7 +18,11 @@ export default function AppShell() {
   const navigate  = useNavigate();
   const { signOut } = useAuth();
 
-  const EXTRA_TITLES: Record<string, string> = { '/dashboard/gastos': 'Gastos Generales' };
+  const EXTRA_TITLES: Record<string, string> = {
+    '/dashboard/gastos':        'Gastos Generales',
+    '/dashboard/ingredientes':  'Ingredientes',
+    '/dashboard/promociones':   'Promociones',
+  };
   const current = NAV.find(n => location.pathname.startsWith(n.to) && n.to !== '/dashboard')?.label
     ?? EXTRA_TITLES[location.pathname]
     ?? (location.pathname === '/dashboard' ? 'Inicio' : 'Mi Dulce Tentación');

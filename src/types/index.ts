@@ -127,3 +127,29 @@ export type IngredienteForm = Omit<Ingrediente, 'id' | 'created_at' | 'updated_a
 export type RecetaForm = Omit<Receta, 'id' | 'created_at' | 'updated_at'>;
 export type GastoForm = Omit<GastoGeneral, 'id' | 'created_at'>;
 export type RecetaIngredienteForm = Omit<RecetaIngrediente, 'id' | 'receta_id'>;
+
+// ─── Pedidos ──────────────────────────────────────────────────────────────────
+
+export type EstadoPedido = 'pendiente' | 'entregado' | 'cancelado';
+
+export interface Pedido {
+  id: string;
+  cliente?: string;
+  fecha_entrega: string;        // ISO date (YYYY-MM-DD)
+  estado: EstadoPedido;
+  notas?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PedidoLinea {
+  id: string;
+  pedido_id: string;
+  receta_id: string;
+  cantidad: number;
+  precio_unitario_cobrado: number;
+  created_at: string;
+}
+
+export type PedidoForm      = Omit<Pedido,      'id' | 'created_at' | 'updated_at'>;
+export type PedidoLineaForm = Omit<PedidoLinea, 'id' | 'pedido_id' | 'created_at'>;

@@ -72,11 +72,14 @@ export default function ReporteMensualPage() {
   const [ingredientes, setIngredientes] = useState<Ingrediente[]>([]);
   const [gastosMes,    setGastosMes]    = useState<GastoGeneral[]>([]);
   const [config,       setConfig]       = useState({ valor_hora_trabajo: 500, costo_fijo_por_hora: 100 });
+  const [error,        setError]        = useState('');
+  const [retryKey,     setRetryKey]     = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      setError('');
       try {
         const [peds, lineas, recs, recLins, ings, gastos, cfg] = await Promise.all([
           pedidosService.getDelMes(year, month),
@@ -95,13 +98,15 @@ export default function ReporteMensualPage() {
         setIngredientes(ings);
         setGastosMes(gastos);
         setConfig({ valor_hora_trabajo: cfg.valor_hora_trabajo, costo_fijo_por_hora: cfg.costo_fijo_por_hora });
+      } catch {
+        if (!cancelled) setError('No se pudieron cargar los datos. Verificá tu conexión.');
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
     load();
     return () => { cancelled = true; };
-  }, [year, month]);
+  }, [year, month, retryKey]);
 
   const recetaMap = useMemo(() => Object.fromEntries(recetas.map(r => [r.id, r])), [recetas]);
   const ingMap    = useMemo(() => Object.fromEntries(ingredientes.map(i => [i.id, i])), [ingredientes]);
@@ -133,8 +138,13 @@ export default function ReporteMensualPage() {
     const ingresos = lineasEntregadas.reduce((s, l) => s + l.precio_unitario_cobrado * l.cantidad, 0);
 
     const costoMatPrima = lineasEntregadas.reduce((s, l) => {
-      const costoReceta = calcCostoReceta(l.receta_id, recetaMap, recetaLineasMap, ingMap, config);
-      return s + costoReceta * l.cantidad;
+      const receta     = recetaMap[l.receta_id];
+      const costoLote  = calcCostoReceta(l.receta_id, recetaMap, recetaLineasMap, ingMap, config);
+      // por_unidad: costo proporcional a las unidades vendidas, no lotes completos
+      const costoLinea = receta?.modo_venta === 'por_unidad'
+        ? (costoLote / Math.max(receta.rinde_porciones, 1)) * l.cantidad
+        : costoLote * l.cantidad;
+      return s + costoLinea;
     }, 0);
 
     const totalGastosGenerales = gastosMes.reduce((s, g) => s + g.monto, 0);
@@ -196,7 +206,14 @@ export default function ReporteMensualPage() {
         <div className="flex justify-center py-16">
           <Loader2 size={24} className="animate-spin text-rose-300" />
         </div>
-      ) : pedidosEntregados.length === 0 && gastosMes.length === 0 ? (
+      ) : error ? (
+        <div className="py-12 text-center">
+          <p className="text-sm font-semibold text-red-400">⚠️ {error}</p>
+          <button onClick={() => setRetryKey(k => k + 1)} className="mt-3 text-xs text-rose-500 underline">
+            Reintentar
+          </button>
+        </div>
+      ) : pedidosMes.length === 0 && gastosMes.length === 0 ? (
         <div className="py-12 text-center">
           <div className="w-16 h-16 bg-stone-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
             <Sparkles size={24} className="text-stone-200" />
@@ -328,7 +345,7 @@ export default function ReporteMensualPage() {
                 })}
               </div>
               <div className="border-t border-stone-100 mt-3 pt-3 flex justify-between">
-                <span className="text-xs font-semibold text-stone-500">Total mes</span>
+                <span className="text-xs font-semibold text-stone-500">Total cobrado</span>
                 <span className="text-xs font-black text-stone-800 tabular-nums">{formatARS(stats.ingresos, 0)}</span>
               </div>
             </div>

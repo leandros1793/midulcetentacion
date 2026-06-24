@@ -5,7 +5,7 @@ import {
   Package, User, Search,
 } from 'lucide-react';
 import { pedidosService, recetasService, ingredientesService, configuracionService } from '../../services';
-import { calcCostoLinea, calcCostoPorUnidadReceta } from '../../types';
+import { calcCostoLinea } from '../../types';
 import type { Pedido, PedidoForm, PedidoLinea, PedidoLineaForm, EstadoPedido, Receta, Ingrediente, RecetaIngrediente } from '../../types';
 import { formatARS } from '../../utils/format';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
@@ -98,8 +98,13 @@ export default function PedidoBuilder({ pedido: initial, recetas, onBack, onSave
   const totales = useMemo(() => {
     const totalCobrado = lineas.reduce((s, l) => s + l.precio_unitario_cobrado * l.cantidad, 0);
     const totalCosto   = lineas.reduce((s, l) => {
+      const receta    = recetaMap[l.receta_id];
       const costoBase = calcCostoReceta(l.receta_id);
-      return s + costoBase * l.cantidad;
+      // por_unidad: el costo es proporcional a las unidades vendidas, no lotes completos
+      const costoLinea = receta?.modo_venta === 'por_unidad'
+        ? (costoBase / Math.max(receta.rinde_porciones, 1)) * l.cantidad
+        : costoBase * l.cantidad;
+      return s + costoLinea;
     }, 0);
     const ganancia = totalCobrado - totalCosto;
     const margenReal = totalCosto > 0 ? (ganancia / totalCosto) * 100 : 0;
@@ -283,10 +288,13 @@ export default function PedidoBuilder({ pedido: initial, recetas, onBack, onSave
             )}
 
             {lineas.map(li => {
-              const receta    = recetaMap[li.receta_id];
-              const costoBase = calcCostoReceta(li.receta_id);
+              const receta     = recetaMap[li.receta_id];
+              const costoBase  = calcCostoReceta(li.receta_id);
               const totalLinea = li.precio_unitario_cobrado * li.cantidad;
-              const gananciaLinea = totalLinea - costoBase * li.cantidad;
+              const costoLinea = receta?.modo_venta === 'por_unidad'
+                ? (costoBase / Math.max(receta.rinde_porciones, 1)) * li.cantidad
+                : costoBase * li.cantidad;
+              const gananciaLinea = totalLinea - costoLinea;
 
               return (
                 <div key={li.id} className="flex items-start gap-3 bg-stone-50 rounded-2xl p-3">
@@ -366,17 +374,26 @@ export default function PedidoBuilder({ pedido: initial, recetas, onBack, onSave
               )}
 
               {/* Preview costo vs precio */}
-              {newRecetaId && newPrecio && Number(newPrecio) > 0 && (
-                <div className="flex items-center justify-between bg-white rounded-xl px-3 py-2 border border-amber-100 text-[10px]">
-                  <span className="text-stone-400">Costo estimado</span>
-                  <span className="font-semibold text-stone-600">{formatARS(calcCostoReceta(newRecetaId) * Number(newCantidad), 0)}</span>
-                  <span className="text-stone-300">·</span>
-                  <span className="text-stone-400">Ganancia</span>
-                  <span className={`font-bold ${Number(newPrecio) * Number(newCantidad) - calcCostoReceta(newRecetaId) * Number(newCantidad) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                    {formatARS(Number(newPrecio) * Number(newCantidad) - calcCostoReceta(newRecetaId) * Number(newCantidad), 0)}
-                  </span>
-                </div>
-              )}
+              {newRecetaId && newPrecio && Number(newPrecio) > 0 && (() => {
+                const recetaPreview = recetaMap[newRecetaId];
+                const costoLote = calcCostoReceta(newRecetaId);
+                const costoPreview = recetaPreview?.modo_venta === 'por_unidad'
+                  ? (costoLote / Math.max(recetaPreview.rinde_porciones, 1)) * Number(newCantidad)
+                  : costoLote * Number(newCantidad);
+                const cobradoPreview = Number(newPrecio) * Number(newCantidad);
+                const gananciaPreview = cobradoPreview - costoPreview;
+                return (
+                  <div className="flex items-center justify-between bg-white rounded-xl px-3 py-2 border border-amber-100 text-[10px]">
+                    <span className="text-stone-400">Costo estimado</span>
+                    <span className="font-semibold text-stone-600">{formatARS(costoPreview, 0)}</span>
+                    <span className="text-stone-300">·</span>
+                    <span className="text-stone-400">Ganancia</span>
+                    <span className={`font-bold ${gananciaPreview >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                      {formatARS(gananciaPreview, 0)}
+                    </span>
+                  </div>
+                );
+              })()}
 
               {lineaError && (
                 <p className="text-[10px] text-red-500 bg-red-50 rounded-lg px-2.5 py-1.5 text-center">⚠️ {lineaError}</p>

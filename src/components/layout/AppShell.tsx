@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, ShoppingBasket, BookOpen,
+  LayoutDashboard, BookOpen,
   Settings, ChefHat, LogOut, ShoppingBag, BarChart2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';

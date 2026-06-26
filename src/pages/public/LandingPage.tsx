@@ -242,22 +242,74 @@ export default function LandingPage() {
         </section>
       )}
 
-      {/* ── Propuesta de valor ────────────────────────────────────────────────── */}
-      <section className="py-10 px-5">
-        <div className="max-w-sm mx-auto grid grid-cols-3 gap-3 lg:max-w-3xl lg:gap-6">
-          {[
-            { icon: '🌿', label: 'Ingredientes naturales' },
-            { icon: '✨', label: 'Diseños únicos' },
-            { icon: '🛵', label: 'Entrega a domicilio' },
-          ].map(({ icon, label }) => (
-            <div
-              key={label}
-              className="flex flex-col items-center gap-2 bg-white/70 backdrop-blur-sm py-5 px-2 rounded-2xl shadow-[0_2px_12px_rgb(0,0,0,0.04)] border border-white lg:py-8 lg:px-4 lg:gap-3"
-            >
-              <span className="text-2xl lg:text-4xl">{icon}</span>
-              <p className="text-[11px] lg:text-sm text-stone-500 font-semibold leading-tight text-center">{label}</p>
+      {/* ── Servicios + Horarios ─────────────────────────────────────────────── */}
+      <section className="py-8 px-5">
+        <div className="max-w-sm mx-auto lg:max-w-3xl space-y-3">
+
+          {/* Tiles de servicios reales */}
+          <div className="grid grid-cols-3 gap-3 lg:gap-4">
+            {[
+              {
+                icon: '🎂',
+                label: 'Tortas & postres',
+                sub: 'A pedido o listos para llevar',
+                from: 'from-rose-50', to: 'to-pink-50/80',
+                border: 'border-rose-100/70',
+              },
+              {
+                icon: '🍬',
+                label: 'Mesas dulces',
+                sub: 'Para eventos y celebraciones',
+                from: 'from-amber-50', to: 'to-orange-50/80',
+                border: 'border-amber-100/70',
+              },
+              {
+                icon: '📍',
+                label: 'Retiro en local',
+                sub: 'Cañuelas 1719 · Villa Revol',
+                from: 'from-violet-50', to: 'to-purple-50/80',
+                border: 'border-violet-100/60',
+              },
+            ].map(({ icon, label, sub, from, to, border }) => (
+              <div
+                key={label}
+                className={`flex flex-col items-center gap-2 bg-gradient-to-b ${from} ${to} py-5 px-2 rounded-2xl shadow-[0_2px_12px_rgb(0,0,0,0.04)] border ${border} lg:py-7 lg:px-4 lg:gap-3`}
+              >
+                <span className="text-2xl lg:text-4xl">{icon}</span>
+                <div className="text-center">
+                  <p className="text-[10px] lg:text-xs text-stone-700 font-bold leading-tight">{label}</p>
+                  <p className="text-[9px] lg:text-[10px] text-stone-400 font-medium mt-0.5 leading-tight">{sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Franja de horarios */}
+          <div className="bg-white/85 backdrop-blur-sm rounded-2xl border border-stone-100/80 shadow-[0_2px_10px_rgb(0,0,0,0.04)] px-4 py-3.5">
+            <div className="flex items-start gap-3">
+              <span className="text-lg shrink-0 mt-0.5">🕐</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[9px] font-black uppercase tracking-[0.15em] text-stone-400 mb-2">
+                  Horarios de atención
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <p className="text-[10px] font-bold text-stone-700 leading-tight">Lun – Vie</p>
+                    <p className="text-[9px] text-stone-400 mt-0.5 leading-snug">10–13 hs<br />17:30–20:30 hs</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-stone-700 leading-tight">Sábados</p>
+                    <p className="text-[9px] text-stone-400 mt-0.5 leading-snug">10–20 hs<br />(corrido)</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-stone-700 leading-tight">Domingos</p>
+                    <p className="text-[9px] text-stone-400 mt-0.5 leading-snug">Desde las<br />16:00 hs</p>
+                  </div>
+                </div>
+              </div>
             </div>
-          ))}
+          </div>
+
         </div>
       </section>
 

@@ -35,6 +35,7 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
   const [uploadingImg, setUploadingImg] = useState(false);
   const [imgError,     setImgError]     = useState('');
   const [confirmBack,  setConfirmBack]  = useState(false);
+  const [saveError,    setSaveError]    = useState('');
   const [lineaError,   setLineaError]   = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -164,9 +165,12 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
 
   const handleSave = async () => {
     setSaving(true);
+    setSaveError('');
     try {
       const updated = await recetasService.update(receta.id, { ...receta, margen_ganancia_porcentaje: margen });
       onSave(updated);
+    } catch {
+      setSaveError('No se pudo guardar. Verificá tu conexión y volvé a intentar.');
     } finally {
       setSaving(false);
     }
@@ -193,6 +197,8 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
               receta.rinde_porciones !== initial.rinde_porciones ||
               receta.costo_packaging_fijo !== initial.costo_packaging_fijo ||
               (receta.notas ?? '') !== (initial.notas ?? '') ||
+              receta.modo_venta !== initial.modo_venta ||
+              (receta.visible_en_catalogo ?? false) !== (initial.visible_en_catalogo ?? false) ||
               margen !== initial.margen_ganancia_porcentaje;
             if (hayDirty) { setConfirmBack(true); return; }
             onBack();
@@ -214,6 +220,11 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
           {saving ? 'Guardando…' : 'Guardar'}
         </button>
       </div>
+      {saveError && (
+        <p className="mx-4 mt-2 text-xs text-red-500 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+          {saveError}
+        </p>
+      )}
 
       <div className="p-4 space-y-4 flex-1">
 

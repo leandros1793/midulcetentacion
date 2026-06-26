@@ -166,6 +166,12 @@ export default function IngredientesPage() {
         <EmptyState icon={ShoppingBasket} title="Sin ingredientes"
           description="Agregá tu primera materia prima para empezar a costear."
           action={{ label: '+ Agregar ingrediente', onClick: openNew }} />
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
+          <Search size={24} className="text-stone-300" />
+          <p className="text-sm font-semibold text-stone-500">Sin resultados para "{query}"</p>
+          <p className="text-xs text-stone-400">Probá con otro nombre o categoría.</p>
+        </div>
       ) : (
         <div className="space-y-2">
           {filtered.map(ing => (

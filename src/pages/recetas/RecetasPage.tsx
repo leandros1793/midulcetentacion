@@ -23,6 +23,7 @@ export default function RecetasPage() {
   const [showForm, setShowForm] = useState(false);
   const [form,     setForm]     = useState<RecetaForm>(DEFAULT_FORM);
   const [delId,    setDelId]    = useState<string | null>(null);
+  const [delError, setDelError] = useState('');
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -46,9 +47,14 @@ export default function RecetasPage() {
   };
 
   const handleDelete = async (id: string) => {
-    await recetasService.delete(id);
-    await refresh();
-    setDelId(null);
+    try {
+      await recetasService.delete(id);
+      await refresh();
+      setDelId(null);
+      setDelError('');
+    } catch {
+      setDelError('No se puede eliminar: esta receta está en uno o más pedidos activos.');
+    }
   };
 
   if (selected) {
@@ -233,9 +239,9 @@ export default function RecetasPage() {
       <ConfirmDialog
         open={!!delId}
         title="Eliminar receta"
-        message="¿Eliminar esta receta y todas sus líneas? Esta acción no se puede deshacer."
+        message={delError || "¿Eliminar esta receta y todas sus líneas? Esta acción no se puede deshacer."}
         onConfirm={() => delId && handleDelete(delId)}
-        onCancel={() => setDelId(null)}
+        onCancel={() => { setDelId(null); setDelError(''); }}
       />
     </div>
   );

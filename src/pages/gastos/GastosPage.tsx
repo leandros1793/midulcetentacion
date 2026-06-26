@@ -123,7 +123,7 @@ export default function GastosPage() {
                   <span className="text-xs font-bold text-gray-600">{formatARS(total)}</span>
                 </div>
                 <div className="space-y-2">
-                  {items.sort((a, b) => b.fecha.localeCompare(a.fecha)).map(g => (
+                  {[...items].sort((a, b) => b.fecha.localeCompare(a.fecha)).map(g => (
                     <div key={g.id} className="card flex items-center gap-3">
                       <div className={`p-2 rounded-xl shrink-0 ${g.categoria === 'Fijo' ? 'bg-blue-50' : 'bg-orange-50'}`}>
                         <Receipt size={16} className={g.categoria === 'Fijo' ? 'text-blue-500' : 'text-orange-500'} />

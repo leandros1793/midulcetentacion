@@ -348,82 +348,75 @@ export default function LandingPage() {
 
       {/* ── Contacto ─────────────────────────────────────────────────────────── */}
       <section id="contacto" className="px-5 pb-16">
-        <div className="max-w-sm mx-auto lg:max-w-2xl relative overflow-hidden rounded-3xl shadow-[0_24px_64px_rgba(244,63,94,0.22)]">
+        <div className="max-w-sm mx-auto lg:max-w-2xl">
 
-          {/* Fondo degradado */}
-          <div className="absolute inset-0 bg-gradient-to-br from-rose-500 via-rose-500 to-pink-600" />
-          {/* Manchas de profundidad */}
-          <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10 pointer-events-none" />
-          <div className="absolute -bottom-14 -left-8 w-60 h-60 rounded-full bg-white/[0.07] pointer-events-none" />
-          <div className="absolute top-1/3 right-6 w-16 h-16 rounded-full bg-amber-300/25 pointer-events-none" />
-
-          <div className="relative p-8 text-center">
-
-            {/* Pill badge */}
-            <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white/90 text-[10px] font-bold px-3.5 py-1.5 rounded-full mb-5 tracking-[0.18em] uppercase border border-white/20">
+          {/* Header — mismo estilo que el resto de secciones */}
+          <div className="text-center mb-8">
+            <span className="inline-flex items-center gap-1.5 bg-rose-100/80 text-rose-500 text-xs font-bold px-4 py-1.5 rounded-full mb-4 tracking-wide shadow-sm shadow-rose-100">
               💬 Contacto directo
             </span>
-
-            <h2 className="text-2xl font-black text-white tracking-tight mb-2">
+            <h2 className="text-2xl lg:text-3xl font-extrabold text-stone-800 tracking-tight">
               ¿Tenés alguna consulta?
             </h2>
-            <p className="text-white/65 text-sm mb-3 leading-relaxed max-w-[260px] mx-auto">
+            <p className="text-sm text-stone-400 mt-2 leading-relaxed">
               Escribinos por WhatsApp y coordinamos tu encargo personalizado.
             </p>
+          </div>
 
-            {/* Trust signals */}
-            <div className="flex items-center justify-center gap-3 mb-7">
-              <span className="flex items-center gap-1.5 text-[10px] font-semibold text-white/60">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block shrink-0 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
-                Respondemos rápido
-              </span>
-              <span className="text-white/25">·</span>
-              <span className="text-[10px] font-semibold text-white/60">Pedidos personalizados</span>
-            </div>
+          {/* Cards de contacto — 1 col mobile, 2 col sm+ */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-            {/* Tarjetas de contacto glassmorphism */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <a
+              href={`https://wa.me/${config.whatsapp_numero ?? '5493512476048'}`}
+              target="_blank" rel="noopener noreferrer"
+              className="group flex items-center gap-4 bg-white rounded-3xl border border-stone-100 shadow-[0_4px_20px_rgb(0,0,0,0.06)] p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgb(0,0,0,0.10)] hover:border-rose-100/70"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center text-white font-black text-lg shadow-[0_4px_12px_rgba(244,63,94,0.28)] shrink-0">
+                {(config.nombre_contacto_1 ?? 'B').charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-stone-800 text-sm leading-tight">
+                  {config.nombre_contacto_1 ?? 'Belu'}
+                </p>
+                <p className="text-xs text-stone-400 mt-0.5">Escribir por WhatsApp →</p>
+              </div>
+              <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center text-green-500 shrink-0 group-hover:bg-green-500 group-hover:text-white transition-all duration-200 shadow-sm">
+                <WhatsAppIcon size={16} />
+              </div>
+            </a>
+
+            {config.whatsapp_numero_2 && (
               <a
-                href={`https://wa.me/${config.whatsapp_numero ?? '5493512476048'}`}
+                href={`https://wa.me/${config.whatsapp_numero_2}`}
                 target="_blank" rel="noopener noreferrer"
-                className="flex-1 flex items-center gap-3 bg-white/15 hover:bg-white/22 backdrop-blur-sm border border-white/20 hover:border-white/35 rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5 text-left group"
+                className="group flex items-center gap-4 bg-white rounded-3xl border border-stone-100 shadow-[0_4px_20px_rgb(0,0,0,0.06)] p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgb(0,0,0,0.10)] hover:border-rose-100/70"
               >
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white font-black text-base shrink-0">
-                  {(config.nombre_contacto_1 ?? 'B').charAt(0).toUpperCase()}
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-black text-lg shadow-[0_4px_12px_rgba(244,63,94,0.28)] shrink-0">
+                  {(config.nombre_contacto_2 ?? 'F').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-bold text-sm leading-tight">
-                    {config.nombre_contacto_1 ?? 'Belu'}
+                  <p className="font-bold text-stone-800 text-sm leading-tight">
+                    {config.nombre_contacto_2 ?? 'Flor'}
                   </p>
-                  <p className="text-white/50 text-[10px] mt-0.5">Escribir ahora →</p>
+                  <p className="text-xs text-stone-400 mt-0.5">Escribir por WhatsApp →</p>
                 </div>
-                <span className="text-emerald-400 shrink-0 group-hover:scale-110 transition-transform duration-200">
-                  <WhatsAppIcon size={20} />
-                </span>
+                <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center text-green-500 shrink-0 group-hover:bg-green-500 group-hover:text-white transition-all duration-200 shadow-sm">
+                  <WhatsAppIcon size={16} />
+                </div>
               </a>
-
-              {config.whatsapp_numero_2 && (
-                <a
-                  href={`https://wa.me/${config.whatsapp_numero_2}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex-1 flex items-center gap-3 bg-white/15 hover:bg-white/22 backdrop-blur-sm border border-white/20 hover:border-white/35 rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5 text-left group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white font-black text-base shrink-0">
-                    {(config.nombre_contacto_2 ?? 'F').charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-bold text-sm leading-tight">
-                      {config.nombre_contacto_2 ?? 'Flor'}
-                    </p>
-                    <p className="text-white/50 text-[10px] mt-0.5">Escribir ahora →</p>
-                  </div>
-                  <span className="text-emerald-400 shrink-0 group-hover:scale-110 transition-transform duration-200">
-                    <WhatsAppIcon size={20} />
-                  </span>
-                </a>
-              )}
-            </div>
+            )}
           </div>
+
+          {/* Trust signals */}
+          <div className="flex items-center justify-center gap-4 mt-5">
+            <span className="flex items-center gap-1.5 text-xs text-stone-400 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+              Respondemos rápido
+            </span>
+            <span className="text-stone-200">·</span>
+            <span className="text-xs text-stone-400 font-medium">Pedidos personalizados</span>
+          </div>
+
         </div>
       </section>
 

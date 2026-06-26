@@ -296,31 +296,81 @@ export default function LandingPage() {
 
       {/* ── Contacto ─────────────────────────────────────────────────────────── */}
       <section id="contacto" className="px-5 pb-16">
-        <div className="max-w-sm mx-auto lg:max-w-2xl bg-rose-50 rounded-3xl p-8 text-center border border-rose-100/80 shadow-[0_8px_40px_rgb(244,63,94,0.08)]">
-          <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm shadow-rose-100">
-            <span className="text-2xl">💌</span>
-          </div>
-          <h2 className="text-xl font-extrabold text-stone-800 tracking-tight mb-2">¿Tenés alguna consulta?</h2>
-          <p className="text-stone-500 text-sm mb-7 leading-relaxed max-w-xs mx-auto">
-            Escribinos por WhatsApp y te respondemos a la brevedad. Hacemos pedidos personalizados para cada ocasión.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a
-              href={`https://wa.me/${config.whatsapp_numero ?? '5493512476048'}`}
-              target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-7 rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-md shadow-green-200 text-sm"
-            >
-              <WhatsAppIcon size={17} /> {config.nombre_contacto_1 ?? 'Belu'}
-            </a>
-            {config.whatsapp_numero_2 && (
+        <div className="max-w-sm mx-auto lg:max-w-2xl relative overflow-hidden rounded-3xl shadow-[0_24px_64px_rgba(244,63,94,0.22)]">
+
+          {/* Fondo degradado */}
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-500 via-rose-500 to-pink-600" />
+          {/* Manchas de profundidad */}
+          <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10 pointer-events-none" />
+          <div className="absolute -bottom-14 -left-8 w-60 h-60 rounded-full bg-white/[0.07] pointer-events-none" />
+          <div className="absolute top-1/3 right-6 w-16 h-16 rounded-full bg-amber-300/25 pointer-events-none" />
+
+          <div className="relative p-8 text-center">
+
+            {/* Pill badge */}
+            <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white/90 text-[10px] font-bold px-3.5 py-1.5 rounded-full mb-5 tracking-[0.18em] uppercase border border-white/20">
+              💬 Contacto directo
+            </span>
+
+            <h2 className="text-2xl font-black text-white tracking-tight mb-2">
+              ¿Tenés alguna consulta?
+            </h2>
+            <p className="text-white/65 text-sm mb-3 leading-relaxed max-w-[260px] mx-auto">
+              Escribinos por WhatsApp y coordinamos tu encargo personalizado.
+            </p>
+
+            {/* Trust signals */}
+            <div className="flex items-center justify-center gap-3 mb-7">
+              <span className="flex items-center gap-1.5 text-[10px] font-semibold text-white/60">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block shrink-0 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
+                Respondemos rápido
+              </span>
+              <span className="text-white/25">·</span>
+              <span className="text-[10px] font-semibold text-white/60">Pedidos personalizados</span>
+            </div>
+
+            {/* Tarjetas de contacto glassmorphism */}
+            <div className="flex flex-col sm:flex-row gap-3">
               <a
-                href={`https://wa.me/${config.whatsapp_numero_2}`}
+                href={`https://wa.me/${config.whatsapp_numero ?? '5493512476048'}`}
                 target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-7 rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-md shadow-green-200 text-sm"
+                className="flex-1 flex items-center gap-3 bg-white/15 hover:bg-white/22 backdrop-blur-sm border border-white/20 hover:border-white/35 rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5 text-left group"
               >
-                <WhatsAppIcon size={17} /> {config.nombre_contacto_2 ?? 'Flor'}
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white font-black text-base shrink-0">
+                  {(config.nombre_contacto_1 ?? 'B').charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-bold text-sm leading-tight">
+                    {config.nombre_contacto_1 ?? 'Belu'}
+                  </p>
+                  <p className="text-white/50 text-[10px] mt-0.5">Escribir ahora →</p>
+                </div>
+                <span className="text-emerald-400 shrink-0 group-hover:scale-110 transition-transform duration-200">
+                  <WhatsAppIcon size={20} />
+                </span>
               </a>
-            )}
+
+              {config.whatsapp_numero_2 && (
+                <a
+                  href={`https://wa.me/${config.whatsapp_numero_2}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex-1 flex items-center gap-3 bg-white/15 hover:bg-white/22 backdrop-blur-sm border border-white/20 hover:border-white/35 rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5 text-left group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white font-black text-base shrink-0">
+                    {(config.nombre_contacto_2 ?? 'F').charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-bold text-sm leading-tight">
+                      {config.nombre_contacto_2 ?? 'Flor'}
+                    </p>
+                    <p className="text-white/50 text-[10px] mt-0.5">Escribir ahora →</p>
+                  </div>
+                  <span className="text-emerald-400 shrink-0 group-hover:scale-110 transition-transform duration-200">
+                    <WhatsAppIcon size={20} />
+                  </span>
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -554,7 +604,7 @@ function ProductCard({ producto, whatsappNumero }: {
         {producto.image_url ? (
           <img
             src={producto.image_url}
-            alt={producto.nombre}
+                alt={producto.nombre}
             className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -591,7 +641,7 @@ function ProductCard({ producto, whatsappNumero }: {
                   {formatARS(producto.precioVentaPorUnidad)}
                 </p>
                 <p className="text-[9px] text-stone-300 mt-0.5">
-                  × {producto.rinde_porciones} = {formatARS(producto.precioVenta)}
+                  x {producto.rinde_porciones} = {formatARS(producto.precioVenta)}
                 </p>
               </>
             ) : (

@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  TrendingUp, ShoppingBasket, BookOpen, Receipt,
+  TrendingUp, ShoppingBag, BookOpen, Receipt,
   ChevronRight, Sparkles, Loader2,
 } from 'lucide-react';
-import { ingredientesService, recetasService, gastosService, configuracionService } from '../../services';
+import { ingredientesService, recetasService, gastosService, pedidosService, configuracionService } from '../../services';
 import { calcCostoLinea } from '../../types';
-import type { Ingrediente, Receta, RecetaIngrediente, GastoGeneral } from '../../types';
+import type { Ingrediente, Receta, RecetaIngrediente, GastoGeneral, Pedido } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 import { formatARS as _fmt } from '../../utils/format';
 function formatARS(n: number) { return _fmt(n, 0); }
 
 interface DashboardStats {
-  numIngredientes: number;
+  numPedidosPendientes: number;
   numRecetas: number;
   numGastos: number;
   totalGastosGenerales: number;
@@ -23,9 +24,11 @@ function calcStats(
   recetas: Receta[],
   allLineas: RecetaIngrediente[],
   gastosDelMes: GastoGeneral[],
+  pedidos: Pedido[],
   config: { valor_hora_trabajo: number; costo_fijo_por_hora: number },
 ): DashboardStats {
   const totalGastosGenerales = gastosDelMes.reduce((s, g) => s + g.monto, 0);
+  const numPedidosPendientes = pedidos.filter(p => p.estado === 'pendiente').length;
   const ingMap = Object.fromEntries(ingredientes.map(i => [i.id, i]));
 
   const rentabilidades = recetas.map(receta => {
@@ -41,7 +44,6 @@ function calcStats(
       + receta.costo_packaging_fijo;
     const precioVenta = costoTotal * (1 + receta.margen_ganancia_porcentaje / 100);
     const unidades = Math.max(receta.rinde_porciones, 1);
-    // Para por_unidad, la ganancia representativa es por unidad (lo que realmente "vale" cada pieza)
     const ganancia = receta.modo_venta === 'por_unidad'
       ? (precioVenta - costoTotal) / unidades
       : precioVenta - costoTotal;
@@ -49,29 +51,36 @@ function calcStats(
   });
 
   const masRentable = [...rentabilidades].sort((a, b) => b.ganancia - a.ganancia)[0] ?? null;
-  return { numIngredientes: ingredientes.length, numRecetas: recetas.length,
+  return { numPedidosPendientes, numRecetas: recetas.length,
     numGastos: gastosDelMes.length, totalGastosGenerales, masRentable };
 }
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { user }  = useAuth();
   const now = new Date();
   const [stats,   setStats]   = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Nombre amigable del usuario (email sin dominio como fallback)
+  const nombreUsuario = user?.user_metadata?.full_name
+    ?? user?.user_metadata?.name
+    ?? (user?.email ? user.email.split('@')[0] : null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
       try {
-        const [ingredientes, recetas, allLineas, gastosDelMes, config] = await Promise.all([
+        const [ingredientes, recetas, allLineas, gastosDelMes, pedidos, config] = await Promise.all([
           ingredientesService.getAll(),
           recetasService.getAll(),
           recetasService.getAllLineas(),
           gastosService.getDelMes(now.getFullYear(), now.getMonth()),
+          pedidosService.getAll(),
           configuracionService.get(),
         ]);
-        if (!cancelled) setStats(calcStats(ingredientes, recetas, allLineas, gastosDelMes, config));
+        if (!cancelled) setStats(calcStats(ingredientes, recetas, allLineas, gastosDelMes, pedidos, config));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -91,8 +100,16 @@ export default function DashboardPage() {
           <Sparkles size={14} />
           <span className="text-xs font-medium uppercase tracking-widest">Resumen de {mes}</span>
         </div>
-        <h2 className="text-xl font-bold text-gray-800">¡Hola, pastelera! 👋</h2>
-        <p className="text-sm text-gray-500">Todo está bajo control.</p>
+        <h2 className="text-xl font-bold text-gray-800">
+          ¡Hola{nombreUsuario ? `, ${nombreUsuario}` : ''}! 👋
+        </h2>
+        <p className="text-sm text-gray-500">
+          {!stats || loading
+            ? 'Calculando tu negocio…'
+            : stats.numPedidosPendientes > 0
+              ? `Tenés ${stats.numPedidosPendientes} pedido${stats.numPedidosPendientes !== 1 ? 's' : ''} pendiente${stats.numPedidosPendientes !== 1 ? 's' : ''} 🎂`
+              : 'Todo al día. Sin pedidos pendientes ✓'}
+        </p>
       </div>
 
       {/* KPI Cards */}
@@ -109,27 +126,30 @@ export default function DashboardPage() {
               value={formatARS(stats.totalGastosGenerales)}
               sub={`${stats.numGastos} registros`}
               bg="bg-amber-50"
+              onClick={() => navigate('/dashboard/gastos')}
             />
             <KpiCard
-              icon={<ShoppingBasket size={18} className="text-emerald-500" />}
-              label="Ingredientes"
-              value={String(stats.numIngredientes)}
-              sub="en stock"
-              bg="bg-emerald-50"
+              icon={<ShoppingBag size={18} className="text-rose-500" />}
+              label="Pedidos pendientes"
+              value={String(stats.numPedidosPendientes)}
+              sub={stats.numPedidosPendientes === 0 ? 'Al día ✓' : 'por entregar'}
+              bg={stats.numPedidosPendientes > 0 ? 'bg-rose-50' : 'bg-emerald-50'}
+              onClick={() => navigate('/dashboard/pedidos')}
             />
             <KpiCard
               icon={<BookOpen size={18} className="text-violet-500" />}
               label="Recetas"
               value={String(stats.numRecetas)}
-              sub="activas"
+              sub="en el portfolio"
               bg="bg-violet-50"
+              onClick={() => navigate('/dashboard/recetas')}
             />
             <KpiCard
-              icon={<TrendingUp size={18} className="text-rose-500" />}
+              icon={<TrendingUp size={18} className="text-emerald-500" />}
               label="Más rentable"
               value={stats.masRentable ? formatARS(stats.masRentable.ganancia) : '—'}
               sub={stats.masRentable?.receta.nombre ?? 'Sin recetas'}
-              bg="bg-rose-50"
+              bg="bg-emerald-50"
             />
           </div>
 
@@ -168,7 +188,7 @@ export default function DashboardPage() {
         <div className="space-y-2">
           {[
             { label: 'Nueva receta / cálculo de costos', icon: <BookOpen size={16} />, path: '/dashboard/recetas', color: 'text-violet-500', bg: 'bg-violet-50' },
-            { label: 'Agregar ingrediente',              icon: <ShoppingBasket size={16} />, path: '/dashboard/ingredientes', color: 'text-emerald-500', bg: 'bg-emerald-50' },
+            { label: 'Agregar ingrediente',              icon: <ShoppingBag size={16} />, path: '/dashboard/ingredientes', color: 'text-emerald-500', bg: 'bg-emerald-50' },
             { label: 'Registrar gasto',                  icon: <Receipt size={16} />, path: '/dashboard/gastos', color: 'text-amber-500', bg: 'bg-amber-50' },
           ].map(item => (
             <button
@@ -187,15 +207,20 @@ export default function DashboardPage() {
   );
 }
 
-function KpiCard({ icon, label, value, sub, bg }: {
+function KpiCard({ icon, label, value, sub, bg, onClick }: {
   icon: React.ReactNode; label: string; value: string; sub: string; bg: string;
+  onClick?: () => void;
 }) {
+  const El = onClick ? 'button' : 'div';
   return (
-    <div className="card">
+    <El
+      className={`card text-left w-full ${onClick ? 'active:scale-[0.98] transition-transform cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       <div className={`${bg} w-9 h-9 rounded-xl flex items-center justify-center mb-3`}>{icon}</div>
       <p className="text-xs text-gray-400 mb-0.5">{label}</p>
       <p className="text-lg font-bold text-gray-800 leading-tight">{value}</p>
       <p className="text-xs text-gray-400">{sub}</p>
-    </div>
+    </El>
   );
 }

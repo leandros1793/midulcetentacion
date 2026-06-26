@@ -67,7 +67,8 @@ export default function IngredientesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editing,  setEditing]  = useState<Ingrediente | null>(null);
   const [form,     setForm]     = useState<IngredienteForm>(DEFAULT_FORM);
-  const [delId,    setDelId]    = useState<string | null>(null);
+  const [delId,      setDelId]      = useState<string | null>(null);
+  const [catFiltro,  setCatFiltro]  = useState<CategoriaIngrediente | 'Todos'>('Todos');
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -123,10 +124,15 @@ export default function IngredientesPage() {
     setDelId(null);
   };
 
-  const filtered = ingredientes.filter(i =>
-    i.nombre.toLowerCase().includes(query.toLowerCase()) ||
-    i.categoria.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = ingredientes.filter(i => {
+    const matchText = i.nombre.toLowerCase().includes(query.toLowerCase()) ||
+      i.categoria.toLowerCase().includes(query.toLowerCase());
+    const matchCat  = catFiltro === 'Todos' || i.categoria === catFiltro;
+    return matchText && matchCat;
+  });
+
+  // Categorías que tienen al menos 1 ingrediente cargado
+  const categoriasUsadas = CATEGORIAS.filter(c => ingredientes.some(i => i.categoria === c));
 
   const unitInfo    = UNIT_MAP[form.unidad_medida_compra];
   const costoPreview =
@@ -147,6 +153,27 @@ export default function IngredientesPage() {
           <Plus size={16} /> Nuevo
         </button>
       </div>
+
+      {/* Filtros de categoría */}
+      {categoriasUsadas.length > 1 && (
+        <div className="-mx-4 px-4 overflow-x-auto pb-0.5">
+          <div className="flex gap-2 w-max">
+            {(['Todos', ...categoriasUsadas] as (CategoriaIngrediente | 'Todos')[]).map(cat => (
+              <button
+                key={cat}
+                onClick={() => setCatFiltro(cat)}
+                className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full transition-all whitespace-nowrap ${
+                  catFiltro === cat
+                    ? 'bg-rose-500 text-white shadow-sm shadow-rose-200'
+                    : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Búsqueda */}
       {ingredientes.length > 0 && (

@@ -571,6 +571,15 @@ export default function RecetaBuilder({ receta: initial, onBack, onSave }: Props
           costoFijoHora={config.costo_fijo_por_hora}
         />
 
+        {/* Botón guardar al pie — evita scrollear hasta arriba */}
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="btn-primary w-full justify-center"
+        >
+          {saving ? <><Loader2 size={15} className="animate-spin" /> Guardando…</> : <><Save size={15} /> Guardar receta</>}
+        </button>
+
       </div>
 
       <ConfirmDialog

@@ -284,31 +284,6 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Franja de horarios */}
-          <div className="bg-white/85 backdrop-blur-sm rounded-2xl border border-stone-100/80 shadow-[0_2px_10px_rgb(0,0,0,0.04)] px-4 py-3.5">
-            <div className="flex items-start gap-3">
-              <span className="text-lg shrink-0 mt-0.5">🕐</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-black uppercase tracking-[0.15em] text-stone-400 mb-2">
-                  Horarios de atención
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <p className="text-[10px] font-bold text-stone-700 leading-tight">Lun – Vie</p>
-                    <p className="text-[9px] text-stone-400 mt-0.5 leading-snug">10–13 hs<br />17:30–20:30 hs</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-stone-700 leading-tight">Sábados</p>
-                    <p className="text-[9px] text-stone-400 mt-0.5 leading-snug">10–20 hs<br />(corrido)</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-stone-700 leading-tight">Domingos</p>
-                    <p className="text-[9px] text-stone-400 mt-0.5 leading-snug">Desde las<br />16:00 hs</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
         </div>
       </section>
@@ -471,19 +446,111 @@ export default function LandingPage() {
         </section>
       )}
 
-      {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-stone-100/80 bg-white/60 backdrop-blur-sm py-10 px-5 text-center lg:py-12">
-        <img
-          src="/logo.png"
-          alt="Dulce Tentación"
-          className="h-14 w-14 object-contain mx-auto mb-3"
-          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-        />
-        <p className="text-sm font-bold text-stone-700 tracking-tight">Repostería & Cotillón Dulce Tentación</p>
-        <p className="text-xs text-stone-400 mt-1.5">
-          Córdoba, Argentina · Hecho con <Heart size={10} className="inline text-rose-400 mx-0.5" /> y los mejores ingredientes
-        </p>
-        <p className="text-xs text-stone-300 mt-1.5">Belu: 351 247-6048 · Flor: 351 221-7870</p>
+      {/* ── Footer premium ───────────────────────────────────────────── */}
+      <footer className="bg-gradient-to-br from-stone-900 via-stone-900 to-rose-950 pt-12 pb-8 px-5">
+        <div className="max-w-sm mx-auto lg:max-w-5xl">
+
+          {/* Grid: 1 col mobile → 3 cols desktop */}
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-16 mb-10">
+
+            {/* Col 1: Marca */}
+            <div className="text-center lg:text-left">
+              <div className="flex items-center gap-3 justify-center lg:justify-start mb-4">
+                <img
+                  src="/logo.png"
+                  alt="Dulce Tentación"
+                  className="h-10 w-10 object-contain rounded-xl opacity-95"
+                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                />
+                <div>
+                  <p className="text-[9px] text-rose-400 font-bold tracking-widest uppercase leading-none mb-0.5">
+                    Repostería & Cotillón
+                  </p>
+                  <p className="font-extrabold text-white text-sm tracking-tight">Dulce Tentación</p>
+                </div>
+              </div>
+              <p className="text-stone-500 text-xs leading-relaxed max-w-[200px] mx-auto lg:mx-0">
+                Tortas, postres y delicias artesanales hechas con amor en Córdoba.
+              </p>
+              <div className="flex items-center gap-2 justify-center lg:justify-start mt-4">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                <span className="text-xs text-stone-600 font-medium">Córdoba, Argentina</span>
+              </div>
+            </div>
+
+            {/* Col 2: Horarios — destacados en amber */}
+            <div className="text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 mb-5">
+                <div className="w-5 h-5 rounded-md bg-amber-400/15 flex items-center justify-center shrink-0">
+                  <span className="text-amber-400 text-[11px] leading-none">⏰</span>
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-400">
+                  Horarios de atención
+                </p>
+              </div>
+              <div className="space-y-3.5">
+                <div className="flex items-baseline justify-between lg:justify-start lg:gap-6 border-b border-white/5 pb-3.5">
+                  <p className="text-xs font-bold text-white/75 w-16 shrink-0 text-left">Lun – Vie</p>
+                  <p className="text-xs text-stone-400 text-right lg:text-left">10:00 – 13:00 &nbsp;·&nbsp; 17:30 – 20:30</p>
+                </div>
+                <div className="flex items-baseline justify-between lg:justify-start lg:gap-6 border-b border-white/5 pb-3.5">
+                  <p className="text-xs font-bold text-white/75 w-16 shrink-0 text-left">Sábados</p>
+                  <p className="text-xs text-stone-400 text-right lg:text-left">10:00 – 20:00 <span className="text-stone-600 text-[10px]">(corrido)</span></p>
+                </div>
+                <div className="flex items-baseline justify-between lg:justify-start lg:gap-6">
+                  <p className="text-xs font-bold text-white/75 w-16 shrink-0 text-left">Domingos</p>
+                  <p className="text-xs text-stone-400 text-right lg:text-left">Desde las 16:00 hs</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Col 3: Contacto */}
+            <div className="text-center lg:text-left">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-stone-500 mb-5">Contacto</p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 justify-center lg:justify-start">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center text-white font-black text-xs shrink-0 shadow-[0_2px_8px_rgba(244,63,94,0.3)]">
+                    B
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-white/70 leading-none">Belu</p>
+                    <p className="text-xs text-stone-500 mt-0.5">351 247‑6048</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 justify-center lg:justify-start">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-black text-xs shrink-0 shadow-[0_2px_8px_rgba(244,63,94,0.3)]">
+                    F
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-white/70 leading-none">Flor</p>
+                    <p className="text-xs text-stone-500 mt-0.5">351 221‑7870</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 justify-center lg:justify-start pt-1">
+                  <div className="w-8 h-8 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0">
+                    <span className="text-violet-400 text-[13px]">📍</span>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[9px] font-bold text-stone-600 uppercase tracking-wide leading-none mb-0.5">Retiro en local</p>
+                    <p className="text-xs text-stone-500">Cañuelas 1719 · Villa Revol</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Divider + copyright */}
+          <div className="border-t border-white/[0.06] pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p className="text-xs text-stone-700 text-center flex items-center gap-1">
+              Hecho con <Heart size={10} className="text-rose-500 mx-0.5" /> y los mejores ingredientes
+            </p>
+            <p className="text-[10px] text-stone-700 font-mono">
+              © {new Date().getFullYear()} Dulce Tentación
+            </p>
+          </div>
+
+        </div>
       </footer>
 
     </div>

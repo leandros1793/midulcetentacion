@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   TrendingUp, BookOpen, Receipt, Sparkles, Loader2,
-  Plus, ShoppingBag,
+  Plus, ShoppingBag, BarChart2,
 } from 'lucide-react';
 import { ingredientesService, recetasService, gastosService, pedidosService, configuracionService } from '../../services';
 import { calcCostoLinea } from '../../types';
@@ -268,7 +268,7 @@ export default function DashboardPage() {
             <p className="text-[9px] font-black uppercase tracking-[0.18em] text-stone-400 mb-3">
               Acceso rapido
             </p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <QuickTile
                 icon={<Plus size={18} />}
                 label="Nueva receta"
@@ -278,7 +278,7 @@ export default function DashboardPage() {
               />
               <QuickTile
                 icon={<ShoppingBag size={18} />}
-                label="Ingrediente"
+                label="Ingredientes"
                 gradient="bg-gradient-to-br from-emerald-400 to-emerald-600"
                 shadow="shadow-[0_6px_18px_rgba(52,211,153,0.35)]"
                 onClick={() => navigate('/dashboard/ingredientes')}
@@ -289,6 +289,13 @@ export default function DashboardPage() {
                 gradient="bg-gradient-to-br from-amber-400 to-orange-500"
                 shadow="shadow-[0_6px_18px_rgba(251,146,60,0.38)]"
                 onClick={() => navigate('/dashboard/gastos')}
+              />
+              <QuickTile
+                icon={<BarChart2 size={18} />}
+                label="Reporte"
+                gradient="bg-gradient-to-br from-sky-400 to-blue-600"
+                shadow="shadow-[0_6px_18px_rgba(56,189,248,0.35)]"
+                onClick={() => navigate('/dashboard/reporte')}
               />
             </div>
           </div>

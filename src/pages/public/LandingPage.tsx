@@ -713,7 +713,7 @@ function PromoCard({ promo, whatsappNumero }: { promo: Promocion; whatsappNumero
 
 // ── MenuItemCard (catálogo público — precio libre) ────────────────────────────
 function MenuItemCard({ item, whatsappNumero }: {
-  item: import('../../types').MenuItem;
+  item: MenuItem;
   whatsappNumero: string;
 }) {
   const texto = encodeURIComponent(

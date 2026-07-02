@@ -91,14 +91,41 @@ function IcoDials({ size = 22, active = false }: { size?: number; active?: boole
   );
 }
 
+
+function IcoVitrina({ size = 22, active = false }: { size?: number; active?: boolean }) {
+  const sw = active ? 2.1 : 1.6;
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+      {/* Awning */}
+      <path d="M3 7h18l-2 4H5z"
+        fill="currentColor" fillOpacity={active ? 0.20 : 0.10} />
+      <path d="M3 7h18l-2 4H5z" />
+      {/* Shop body */}
+      <rect x="5" y="11" width="14" height="9" rx="1" />
+      {/* Door */}
+      <rect x="10" y="15" width="4" height="5" rx="0.5"
+        fill="currentColor" fillOpacity={active ? 0.15 : 0.07} />
+      {/* Window left */}
+      <rect x="6.5" y="13" width="2.5" height="2" rx="0.4"
+        fill="currentColor" fillOpacity={active ? 0.20 : 0.10} />
+      {/* Window right */}
+      <rect x="15" y="13" width="2.5" height="2" rx="0.4"
+        fill="currentColor" fillOpacity={active ? 0.20 : 0.10} />
+      {/* Roof line */}
+      <line x1="2" y1="7" x2="22" y2="7" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
 // Nav items
 
 const NAV = [
-  { to: '/dashboard',               Icon: IcoTorta,  label: 'Inicio'   },
-  { to: '/dashboard/pedidos',       Icon: IcoBolsa,  label: 'Pedidos'  },
-  { to: '/dashboard/recetas',       Icon: IcoLibro,  label: 'Recetas'  },
-  { to: '/dashboard/reporte',       Icon: IcoPastel, label: 'Reporte'  },
-  { to: '/dashboard/configuracion', Icon: IcoDials,  label: 'Config'   },
+  { to: '/dashboard',               Icon: IcoTorta,   label: 'Inicio'  },
+  { to: '/dashboard/menu',          Icon: IcoVitrina, label: 'Menú'    },
+  { to: '/dashboard/pedidos',       Icon: IcoBolsa,   label: 'Pedidos' },
+  { to: '/dashboard/recetas',       Icon: IcoLibro,   label: 'Recetas' },
+  { to: '/dashboard/configuracion', Icon: IcoDials,   label: 'Config'  },
 ];
 
 // AppShell
@@ -112,6 +139,8 @@ export default function AppShell() {
     '/dashboard/gastos':       'Gastos Generales',
     '/dashboard/ingredientes': 'Ingredientes',
     '/dashboard/promociones':  'Promociones',
+    '/dashboard/reporte':      'Reporte mensual',
+    '/dashboard/menu':         'Menú público',
   };
   const current =
     NAV.find(n => location.pathname.startsWith(n.to) && n.to !== '/dashboard')?.label

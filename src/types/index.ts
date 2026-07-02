@@ -153,3 +153,25 @@ export interface PedidoLinea {
 
 export type PedidoForm      = Omit<Pedido,      'id' | 'created_at' | 'updated_at'>;
 export type PedidoLineaForm = Omit<PedidoLinea, 'id' | 'pedido_id' | 'created_at'>;
+
+// ─── Menú / Catálogo público ──────────────────────────────────────────────────
+
+export type CategoriaMenu =
+  | 'Tortas' | 'Alfajores' | 'Postres' | 'Mesas dulces'
+  | 'Combos' | 'Temporada' | 'Otros';
+
+export interface MenuItem {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+  precio_display: number;     // Precio que ve el cliente (libre, no calculado)
+  imagen_url?: string;        // URL pública Supabase Storage o externa
+  categoria?: CategoriaMenu;
+  visible: boolean;           // true = aparece en la landing
+  orden: number;              // orden manual en el catálogo
+  receta_id?: string;         // opcional: referencia a receta para ver margen
+  created_at: string;
+  updated_at: string;
+}
+
+export type MenuItemForm = Omit<MenuItem, 'id' | 'created_at' | 'updated_at'>;

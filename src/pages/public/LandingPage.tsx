@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Clock, Star, Heart, Sparkles, Flame, Tag, Instagram, ExternalLink } from 'lucide-react';
-import { ingredientesService, recetasService, configuracionService, promocionesService } from '../../services';
+import { ingredientesService, recetasService, configuracionService, promocionesService, menuItemsService } from '../../services';
 import { calcCostoLinea } from '../../types';
-import type { Receta, Promocion } from '../../types';
+import type { Receta, Promocion, MenuItem } from '../../types';
 import { formatARS as _fmt } from '../../utils/format';
 
 // ── WhatsApp SVG Icon ─────────────────────────────────────────────────────────
@@ -51,6 +51,7 @@ const CONFIG_DEFAULT = {
 // ── Componente principal ──────────────────────────────────────────────────────
 export default function LandingPage() {
   const [productos, setProductos] = useState<ProductoConPrecio[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [promos,    setPromos]    = useState<Promocion[]>([]);
   const [config,    setConfig]    = useState(CONFIG_DEFAULT);
 
@@ -59,12 +60,13 @@ export default function LandingPage() {
     let cancelled = false;
     async function load() {
       try {
-        const [ingredientes, recetas, allLineas, cfg, promoActivas] = await Promise.all([
+        const [ingredientes, recetas, allLineas, cfg, promoActivas, menuVis] = await Promise.all([
           ingredientesService.getAll(),
           recetasService.getAll(),
           recetasService.getAllLineas(),
           configuracionService.get(),
           promocionesService.getActivas(),
+          menuItemsService.getVisibles(),
         ]);
         if (cancelled) return;
 
@@ -99,6 +101,7 @@ export default function LandingPage() {
           return { ...receta, precioVenta, precioVentaPorUnidad, emoji: CAKE_EMOJIS[idx % CAKE_EMOJIS.length] };
         });
 
+        setMenuItems(menuVis);
         setProductos(lista);
         setPromos(promoActivas);
       } catch (err) {
@@ -300,7 +303,20 @@ export default function LandingPage() {
             <p className="text-sm text-stone-400 mt-1.5">Con ingredientes frescos y mucho amor 🩷</p>
           </div>
 
-          {productos.length === 0 ? (
+          {/* Si hay menu_items los mostramos; si no, fallback a recetas */}
+          {menuItems.length > 0 ? (
+            <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-5">
+              {menuItems.map(item => (
+                <MenuItemCard key={item.id} item={item} whatsappNumero={whatsappNumero} />
+              ))}
+            </div>
+          ) : productos.length > 0 ? (
+            <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-5">
+              {productos.map(p => (
+                <ProductCard key={p.id} producto={p} whatsappNumero={whatsappNumero} />
+              ))}
+            </div>
+          ) : (
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-12 text-center">
               <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-5">
                 <span className="text-4xl">🎂</span>
@@ -309,13 +325,6 @@ export default function LandingPage() {
               <p className="text-xs text-stone-400 leading-relaxed">
                 Muy pronto vas a poder ver<br />todas nuestras delicias acá.
               </p>
-            </div>
-          ) : (
-            /* Mobile: columna · Desktop: grilla 2 col */
-            <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-5">
-              {productos.map(p => (
-                <ProductCard key={p.id} producto={p} whatsappNumero={whatsappNumero} />
-              ))}
             </div>
           )}
         </div>
@@ -694,6 +703,71 @@ function PromoCard({ promo, whatsappNumero }: { promo: Promocion; whatsappNumero
           >
             <WhatsAppIcon size={16} />
             <span>¡La quiero!</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+// ── MenuItemCard (catálogo público — precio libre) ────────────────────────────
+function MenuItemCard({ item, whatsappNumero }: {
+  item: import('../../types').MenuItem;
+  whatsappNumero: string;
+}) {
+  const texto = encodeURIComponent(
+    `¡Hola! 🎂 Me gustaría encargar *${item.nombre}*. ¿Podían darme más información?`
+  );
+  const waUrl = `https://wa.me/${whatsappNumero}?text=${texto}`;
+
+  return (
+    <div className="group bg-white/80 backdrop-blur-sm rounded-3xl border border-white shadow-[0_4px_20px_rgb(0,0,0,0.05)] overflow-hidden flex lg:flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgb(0,0,0,0.09)] hover:border-rose-100/50">
+
+      {/* Imagen */}
+      <div className="w-28 shrink-0 lg:w-full lg:h-48 bg-gradient-to-br from-rose-50 to-amber-50/80 flex items-center justify-center overflow-hidden">
+        {item.imagen_url ? (
+          <img
+            src={item.imagen_url}
+            alt={item.nombre}
+            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <span className="text-4xl lg:text-6xl transition-transform duration-300 group-hover:scale-110 select-none">
+            🎂
+          </span>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
+        <div>
+          {item.categoria && (
+            <span className="inline-block text-[9px] font-bold bg-rose-50 text-rose-400 px-2 py-0.5 rounded-full mb-1.5 tracking-wide">
+              {item.categoria}
+            </span>
+          )}
+          <h3 className="font-extrabold text-stone-800 text-[15px] lg:text-base tracking-tight leading-tight mb-1.5 truncate">
+            {item.nombre}
+          </h3>
+          {item.descripcion && (
+            <p className="text-xs text-stone-400 line-clamp-2 leading-relaxed">{item.descripcion}</p>
+          )}
+        </div>
+
+        <div className="flex items-end justify-between mt-3 gap-2">
+          <div>
+            <p className="text-[9px] text-stone-400 uppercase tracking-widest font-semibold mb-0.5">Precio</p>
+            <p className="text-lg font-extrabold text-rose-500 tracking-tight leading-none">
+              {formatARS(item.precio_display)}
+            </p>
+          </div>
+          <a
+            href={waUrl}
+            target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3.5 py-2 rounded-full transition-all duration-200 shadow-sm shadow-green-200/70 hover:-translate-y-0.5 whitespace-nowrap"
+          >
+            <WhatsAppIcon size={12} /> Pedir
           </a>
         </div>
       </div>

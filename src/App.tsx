@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
-// Páginas públicas
+// Paginas publicas
 import LandingPage from './pages/public/LandingPage';
 import LoginPage   from './pages/auth/LoginPage';
 
@@ -9,7 +9,7 @@ import LoginPage   from './pages/auth/LoginPage';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import AppShell       from './components/layout/AppShell';
 
-// Páginas del dashboard
+// Paginas del dashboard
 import DashboardPage      from './pages/dashboard/DashboardPage';
 import IngredientesPage   from './pages/ingredientes/IngredientesPage';
 import RecetasPage        from './pages/recetas/RecetasPage';
@@ -18,6 +18,7 @@ import ConfiguracionPage  from './pages/configuracion/ConfiguracionPage';
 import PromocionesPage    from './pages/promociones/PromocionesPage';
 import PedidosPage        from './pages/pedidos/PedidosPage';
 import ReporteMensualPage from './pages/reportes/ReporteMensualPage';
+import MenuPage           from './pages/dashboard/MenuPage';
 import ErrorBoundary      from './components/ui/ErrorBoundary';
 
 export default function App() {
@@ -25,11 +26,11 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* ── Rutas públicas ────────────────────────────────────────────── */}
+          {/* Rutas publicas */}
           <Route path="/"      element={<ErrorBoundary><LandingPage /></ErrorBoundary>} />
           <Route path="/login" element={<LoginPage />} />
 
-          {/* ── Rutas protegidas (requieren sesión Supabase) ──────────────── */}
+          {/* Rutas protegidas */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<AppShell />}>
               <Route index               element={<ErrorBoundary><DashboardPage /></ErrorBoundary>} />
@@ -40,10 +41,11 @@ export default function App() {
               <Route path="promociones"  element={<ErrorBoundary><PromocionesPage /></ErrorBoundary>} />
               <Route path="pedidos"      element={<ErrorBoundary><PedidosPage /></ErrorBoundary>} />
               <Route path="reporte"      element={<ErrorBoundary><ReporteMensualPage /></ErrorBoundary>} />
+              <Route path="menu"         element={<ErrorBoundary><MenuPage /></ErrorBoundary>} />
             </Route>
           </Route>
 
-          {/* ── Fallback ─────────────────────────────────────────────────── */}
+          {/* Fallback */}
           <Route path="*" element={<LandingPage />} />
         </Routes>
       </BrowserRouter>

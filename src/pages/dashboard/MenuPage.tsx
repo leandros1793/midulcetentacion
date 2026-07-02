@@ -52,53 +52,51 @@ function ImageUploader({
 
   return (
     <div className="space-y-2">
-      <label className="label">Foto del producto</label>
+      {/* Preview + upload button en fila — compacto en mobile */}
+      <div className="flex gap-3 items-start">
+        {/* Thumbnail cuadrado */}
+        <div
+          className="relative w-24 h-24 rounded-2xl overflow-hidden bg-stone-100 border-2 border-dashed border-stone-200 flex items-center justify-center cursor-pointer hover:border-rose-300 transition-colors shrink-0"
+          onClick={() => ref.current?.click()}
+        >
+          {value ? (
+            <>
+              <img src={value} alt="preview" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={e => { e.stopPropagation(); onChange(''); }}
+                className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center"
+              >
+                <X size={11} />
+              </button>
+            </>
+          ) : busy ? (
+            <Loader2 size={20} className="animate-spin text-stone-400" />
+          ) : (
+            <div className="flex flex-col items-center gap-1 text-stone-400">
+              <ImagePlus size={22} />
+              <span className="text-[9px] font-medium text-center leading-tight">Tocar para subir</span>
+            </div>
+          )}
+        </div>
 
-      {/* Preview */}
-      <div
-        className="relative w-full aspect-video rounded-2xl overflow-hidden bg-stone-100 border-2 border-dashed border-stone-200 flex items-center justify-center cursor-pointer hover:border-rose-300 transition-colors"
-        onClick={() => ref.current?.click()}
-      >
-        {value ? (
-          <>
-            <img src={value} alt="preview" className="w-full h-full object-cover" />
-            <button
-              type="button"
-              onClick={e => { e.stopPropagation(); onChange(''); }}
-              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
-            >
-              <X size={13} />
-            </button>
-          </>
-        ) : busy ? (
-          <div className="flex flex-col items-center gap-2 text-stone-400">
-            <Loader2 size={24} className="animate-spin" />
-            <span className="text-xs">Subiendo...</span>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2 text-stone-400">
-            <ImagePlus size={28} />
-            <span className="text-xs font-medium">Tocar para subir foto</span>
-            <span className="text-[10px] text-stone-300">JPG, PNG, WEBP</span>
-          </div>
-        )}
+        {/* URL manual */}
+        <div className="flex-1 min-w-0">
+          <label className="label">Foto del producto</label>
+          <input
+            className="input text-xs"
+            placeholder="https://... o tocar el cuadrado"
+            value={value ?? ''}
+            onChange={e => onChange(e.target.value)}
+          />
+          <p className="text-[9px] text-stone-400 mt-1">JPG, PNG, WEBP · Subí o pegá una URL</p>
+        </div>
       </div>
 
       <input
         ref={ref} type="file" accept="image/*" className="hidden"
         onChange={handleFile} disabled={busy}
       />
-
-      {/* URL manual como alternativa */}
-      <div>
-        <label className="label">O pegar URL de imagen</label>
-        <input
-          className="input text-xs"
-          placeholder="https://..."
-          value={value ?? ''}
-          onChange={e => onChange(e.target.value)}
-        />
-      </div>
 
       {err && <p className="text-xs text-red-500">{err}</p>}
     </div>
@@ -133,8 +131,8 @@ function MenuItemForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center sm:items-center sm:p-4">
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md max-h-[92dvh] overflow-y-auto pb-safe">
         {/* Header */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-stone-100 px-5 py-4 flex items-center justify-between rounded-t-3xl z-10">
           <h2 className="font-black text-stone-800 text-base">

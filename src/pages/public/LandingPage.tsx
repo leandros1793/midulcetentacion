@@ -48,6 +48,14 @@ const CONFIG_DEFAULT = {
   costo_fijo_por_hora:  100,
 };
 
+// Helper: formatea numero WhatsApp (549XXXXXXXXXX → 351 XXX-XXXX)
+function fmtPhone(n: string): string {
+  const digits = n.replace(/^549/, '').replace(/\D/g, '');
+  return digits.length >= 10
+    ? `${digits.slice(0, 3)} ${digits.slice(3, 6)}‑${digits.slice(6)}`
+    : n;
+}
+
 // ── Componente principal ──────────────────────────────────────────────────────
 export default function LandingPage() {
   const [productos, setProductos] = useState<ProductoConPrecio[]>([]);
@@ -120,33 +128,21 @@ export default function LandingPage() {
       {/* ── Navbar flotante ──────────────────────────────────────────────────── */}
       <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-stone-200/50">
         <div className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <img
-              src="/logo.png"
-              alt="Dulce Tentación"
-              className="h-9 w-9 object-contain rounded-xl"
-              onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-            />
-            <div className="leading-none">
-              <p className="text-[9px] text-rose-400 font-bold tracking-widest uppercase">Repostería & Cotillón</p>
-              <span className="font-extrabold text-stone-800 text-sm lg:text-base">Dulce Tentación</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <a href="#catalogo" className="hidden lg:inline text-sm font-semibold text-stone-500 hover:text-rose-500 transition-colors">
+          {/* Solo logo */}
+          <img
+            src="/logo.png"
+            alt="Dulce Tentación"
+            className="h-10 w-10 object-contain rounded-xl"
+            onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <a href="#catalogo" className="text-xs sm:text-sm font-semibold text-stone-500 hover:text-rose-500 transition-colors">
               Menú
             </a>
-            <a href="#contacto" className="hidden lg:inline text-sm font-semibold text-stone-500 hover:text-rose-500 transition-colors">
+            <a href="#contacto" className="text-xs sm:text-sm font-semibold text-stone-500 hover:text-rose-500 transition-colors">
               Contacto
             </a>
-            <a
-              href={`https://wa.me/${whatsappNumero}`}
-              target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3.5 py-2 rounded-full transition-all duration-200 shadow-sm shadow-green-200/80"
-            >
-              <WhatsAppIcon size={12} /> WhatsApp
-            </a>
-            <Link to="/login" className="text-xs text-stone-400 hover:text-rose-500 transition-colors px-1 py-2">
+            <Link to="/login" className="text-xs text-stone-400 hover:text-rose-500 transition-colors px-1 py-2 border-l border-stone-200 pl-3">
               Panel →
             </Link>
           </div>
@@ -185,7 +181,7 @@ export default function LandingPage() {
               <Star size={9} fill="currentColor" /> Córdoba · Artesanal · A pedido
             </span>
 
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-stone-800 tracking-tight leading-[1.1] mb-4">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-stone-800 tracking-tight leading-[1.1] mb-4">
               Endulzamos<br />
               <span className="text-rose-500">cada momento</span>
             </h1>
@@ -281,7 +277,7 @@ export default function LandingPage() {
                 <span className="text-2xl lg:text-4xl">{icon}</span>
                 <div className="text-center">
                   <p className="text-[10px] lg:text-xs text-stone-700 font-bold leading-tight">{label}</p>
-                  <p className="text-[9px] lg:text-[10px] text-stone-400 font-medium mt-0.5 leading-tight">{sub}</p>
+                  <p className="text-[10px] text-stone-400 font-medium mt-0.5 leading-tight">{sub}</p>
                 </div>
               </div>
             ))}
@@ -498,17 +494,17 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="space-y-3.5">
-                <div className="flex items-baseline justify-between lg:justify-start lg:gap-6 border-b border-white/5 pb-3.5">
-                  <p className="text-xs font-bold text-white/75 w-16 shrink-0 text-left">Lun – Vie</p>
-                  <p className="text-xs text-stone-400 text-right lg:text-left">10:00 – 13:00 &nbsp;·&nbsp; 17:30 – 20:30</p>
+                <div className="flex flex-col sm:flex-row items-start sm:items-baseline sm:justify-between lg:justify-start lg:gap-6 border-b border-white/5 pb-3.5 gap-0.5">
+                  <p className="text-xs font-bold text-white/75 w-16 shrink-0">Lun – Vie</p>
+                  <p className="text-xs text-stone-400">10:00 – 13:00 · 17:30 – 20:30</p>
                 </div>
-                <div className="flex items-baseline justify-between lg:justify-start lg:gap-6 border-b border-white/5 pb-3.5">
-                  <p className="text-xs font-bold text-white/75 w-16 shrink-0 text-left">Sábados</p>
-                  <p className="text-xs text-stone-400 text-right lg:text-left">10:00 – 20:00 <span className="text-stone-600 text-[10px]">(corrido)</span></p>
+                <div className="flex flex-col sm:flex-row items-start sm:items-baseline sm:justify-between lg:justify-start lg:gap-6 border-b border-white/5 pb-3.5 gap-0.5">
+                  <p className="text-xs font-bold text-white/75 w-16 shrink-0">Sábados</p>
+                  <p className="text-xs text-stone-400">10:00 – 20:00 <span className="text-stone-600 text-[10px]">(corrido)</span></p>
                 </div>
-                <div className="flex items-baseline justify-between lg:justify-start lg:gap-6">
-                  <p className="text-xs font-bold text-white/75 w-16 shrink-0 text-left">Domingos</p>
-                  <p className="text-xs text-stone-400 text-right lg:text-left">Desde las 16:00 hs</p>
+                <div className="flex flex-col sm:flex-row items-start sm:items-baseline sm:justify-between lg:justify-start lg:gap-6 gap-0.5">
+                  <p className="text-xs font-bold text-white/75 w-16 shrink-0">Domingos</p>
+                  <p className="text-xs text-stone-400">Desde las 16:00 hs</p>
                 </div>
               </div>
             </div>
@@ -519,20 +515,20 @@ export default function LandingPage() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3 justify-center lg:justify-start">
                   <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center text-white font-black text-xs shrink-0 shadow-[0_2px_8px_rgba(244,63,94,0.3)]">
-                    B
+                    {(config.nombre_contacto_1 ?? 'B').charAt(0).toUpperCase()}
                   </div>
                   <div className="text-left">
-                    <p className="text-xs font-bold text-white/70 leading-none">Belu</p>
-                    <p className="text-xs text-stone-500 mt-0.5">351 247‑6048</p>
+                    <p className="text-xs font-bold text-white/70 leading-none">{config.nombre_contacto_1 ?? 'Belu'}</p>
+                    <p className="text-xs text-stone-500 mt-0.5">{fmtPhone(config.whatsapp_numero)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 justify-center lg:justify-start">
                   <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-black text-xs shrink-0 shadow-[0_2px_8px_rgba(244,63,94,0.3)]">
-                    F
+                    {(config.nombre_contacto_2 ?? 'F').charAt(0).toUpperCase()}
                   </div>
                   <div className="text-left">
-                    <p className="text-xs font-bold text-white/70 leading-none">Flor</p>
-                    <p className="text-xs text-stone-500 mt-0.5">351 221‑7870</p>
+                    <p className="text-xs font-bold text-white/70 leading-none">{config.nombre_contacto_2 ?? 'Flor'}</p>
+                    <p className="text-xs text-stone-500 mt-0.5">{fmtPhone(config.whatsapp_numero_2)}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 justify-center lg:justify-start pt-1">
@@ -725,7 +721,7 @@ function MenuItemCard({ item, whatsappNumero }: {
     <div className="group bg-white/80 backdrop-blur-sm rounded-3xl border border-white shadow-[0_4px_20px_rgb(0,0,0,0.05)] overflow-hidden flex lg:flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgb(0,0,0,0.09)] hover:border-rose-100/50">
 
       {/* Imagen */}
-      <div className="w-28 shrink-0 lg:w-full lg:h-48 bg-gradient-to-br from-rose-50 to-amber-50/80 flex items-center justify-center overflow-hidden">
+      <div className="w-28 h-28 shrink-0 lg:w-full lg:h-48 bg-gradient-to-br from-rose-50 to-amber-50/80 flex items-center justify-center overflow-hidden">
         {item.imagen_url ? (
           <img
             src={item.imagen_url}
@@ -786,11 +782,11 @@ function ProductCard({ producto, whatsappNumero }: {
     <div className="group bg-white/80 backdrop-blur-sm rounded-3xl border border-white shadow-[0_4px_20px_rgb(0,0,0,0.05)] overflow-hidden flex lg:flex-col transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-[0_16px_40px_rgb(0,0,0,0.09)] hover:border-rose-100/50">
 
       {/* Imagen / placeholder — horizontal en mobile, banner arriba en desktop */}
-      <div className="w-28 shrink-0 lg:w-full lg:h-48 bg-gradient-to-br from-rose-50 to-amber-50/80 flex items-center justify-center overflow-hidden">
+      <div className="w-28 h-28 shrink-0 lg:w-full lg:h-48 bg-gradient-to-br from-rose-50 to-amber-50/80 flex items-center justify-center overflow-hidden">
         {producto.image_url ? (
           <img
             src={producto.image_url}
-                alt={producto.nombre}
+            alt={producto.nombre}
             className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
           />
         ) : (

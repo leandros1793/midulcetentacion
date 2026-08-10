@@ -721,12 +721,12 @@ function MenuItemCard({ item, whatsappNumero }: {
     <div className="group bg-white/80 backdrop-blur-sm rounded-3xl border border-white shadow-[0_4px_20px_rgb(0,0,0,0.05)] overflow-hidden flex lg:flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgb(0,0,0,0.09)] hover:border-rose-100/50">
 
       {/* Imagen */}
-      <div className="w-28 h-28 shrink-0 lg:w-full lg:h-48 bg-gradient-to-br from-rose-50 to-amber-50/80 flex items-center justify-center overflow-hidden">
+      <div className="w-28 h-28 shrink-0 lg:w-full lg:h-auto lg:aspect-[4/3] bg-white flex items-center justify-center overflow-hidden">
         {item.imagen_url ? (
           <img
             src={item.imagen_url}
             alt={item.nombre}
-            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <span className="text-4xl lg:text-6xl transition-transform duration-300 group-hover:scale-110 select-none">
@@ -782,12 +782,12 @@ function ProductCard({ producto, whatsappNumero }: {
     <div className="group bg-white/80 backdrop-blur-sm rounded-3xl border border-white shadow-[0_4px_20px_rgb(0,0,0,0.05)] overflow-hidden flex lg:flex-col transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-[0_16px_40px_rgb(0,0,0,0.09)] hover:border-rose-100/50">
 
       {/* Imagen / placeholder — horizontal en mobile, banner arriba en desktop */}
-      <div className="w-28 h-28 shrink-0 lg:w-full lg:h-48 bg-gradient-to-br from-rose-50 to-amber-50/80 flex items-center justify-center overflow-hidden">
+      <div className="w-28 h-28 shrink-0 lg:w-full lg:h-auto lg:aspect-[4/3] bg-white flex items-center justify-center overflow-hidden">
         {producto.image_url ? (
           <img
             src={producto.image_url}
             alt={producto.nombre}
-            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <span className="text-4xl lg:text-6xl transition-transform duration-300 group-hover:scale-110 select-none">

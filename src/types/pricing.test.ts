@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calcCostoPorUnidadReceta, calcCostoLinea } from './index';
+import { calcCostoLinea } from './index';
 import type { Ingrediente, RecetaIngrediente, Receta } from './index';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

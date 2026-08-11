@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { pedidosService, recetasService, ingredientesService, configuracionService } from '../../services';
 import { calcCostoLinea } from '../../types';
-import type { Pedido, PedidoForm, PedidoLinea, PedidoLineaForm, EstadoPedido, Receta, Ingrediente, RecetaIngrediente } from '../../types';
+import type { Pedido, PedidoLinea, PedidoLineaForm, EstadoPedido, Receta, Ingrediente, RecetaIngrediente } from '../../types';
 import { formatARS } from '../../utils/format';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 

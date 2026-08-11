@@ -59,7 +59,7 @@ function IcoLibro({ size = 22, active = false }: { size?: number; active?: boole
   );
 }
 
-function IcoPastel({ size = 22, active = false }: { size?: number; active?: boolean }) {
+function _IcoPastel({ size = 22, active = false }: { size?: number; active?: boolean }) {
   const sw = active ? 2.1 : 1.6;
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"

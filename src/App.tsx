@@ -20,6 +20,7 @@ import PedidosPage        from './pages/pedidos/PedidosPage';
 import ReporteMensualPage from './pages/reportes/ReporteMensualPage';
 import MenuPage           from './pages/dashboard/MenuPage';
 import ErrorBoundary      from './components/ui/ErrorBoundary';
+import InstallPrompt     from './components/pwa/InstallPrompt';
 
 export default function App() {
   return (
@@ -48,6 +49,7 @@ export default function App() {
           {/* Fallback */}
           <Route path="*" element={<LandingPage />} />
         </Routes>
+        <InstallPrompt />
       </BrowserRouter>
     </AuthProvider>
   );

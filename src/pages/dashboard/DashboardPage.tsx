@@ -148,7 +148,6 @@ export default function DashboardPage() {
     }
     load();
     return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const mes = now.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });

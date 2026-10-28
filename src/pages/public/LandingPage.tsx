@@ -131,7 +131,7 @@ export default function LandingPage() {
           {/* Solo logo */}
           <img
             src="/logo.png"
-            alt="Dulce Tentación"
+            alt="Floré"
             className="h-10 w-10 object-contain rounded-xl"
             onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
@@ -169,7 +169,7 @@ export default function LandingPage() {
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-rose-200/40 to-amber-100/40 blur-2xl scale-110" />
             <img
               src="/logo.png"
-              alt="Dulce Tentación"
+              alt="Floré"
               className="relative w-52 h-52 lg:w-80 lg:h-80 object-contain drop-shadow-[0_20px_40px_rgba(244,63,94,0.18)]"
               onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
             />
@@ -265,7 +265,7 @@ export default function LandingPage() {
               {
                 icon: '📍',
                 label: 'Retiro en local',
-                sub: 'Cañuelas 1719 · Villa Revol',
+                sub: 'Necochea 2920',
                 from: 'from-violet-50', to: 'to-purple-50/80',
                 border: 'border-violet-100/60',
               },
@@ -441,15 +441,15 @@ export default function LandingPage() {
               <div className="flex items-center gap-3 justify-center lg:justify-start mb-4">
                 <img
                   src="/logo.png"
-                  alt="Dulce Tentación"
+                  alt="Floré"
                   className="h-10 w-10 object-contain rounded-xl opacity-95"
                   onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                 />
                 <div>
                   <p className="text-[9px] text-rose-400 font-bold tracking-widest uppercase leading-none mb-0.5">
-                    Repostería & Cotillón
+                    Pastelería Artesanal
                   </p>
-                  <p className="font-extrabold text-white text-sm tracking-tight">Dulce Tentación</p>
+                  <p className="font-extrabold text-white text-sm tracking-tight">Floré</p>
                 </div>
               </div>
               <p className="text-stone-500 text-xs leading-relaxed max-w-[200px] mx-auto lg:mx-0">
@@ -506,7 +506,7 @@ export default function LandingPage() {
                   </div>
                   <div className="text-left">
                     <p className="text-[9px] font-bold text-stone-600 uppercase tracking-wide leading-none mb-0.5">Retiro en local</p>
-                    <p className="text-xs text-stone-500">Cañuelas 1719 · Villa Revol</p>
+                    <p className="text-xs text-stone-500">Necochea 2920</p>
                   </div>
                 </div>
               </div>
@@ -520,7 +520,7 @@ export default function LandingPage() {
               Hecho con <Heart size={10} className="text-rose-500 mx-0.5" /> y los mejores ingredientes
             </p>
             <p className="text-[10px] text-stone-700 font-mono">
-              © {new Date().getFullYear()} Dulce Tentación
+              © {new Date().getFullYear()} Floré
             </p>
           </div>
 

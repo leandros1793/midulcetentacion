@@ -37,12 +37,12 @@ interface ProductoConPrecio extends Receta {
 // Sin anotación de tipo explícita — TS infiere los valores como string/number concretos,
 // no como string | undefined (que heredaría de los campos opcionales de Configuracion).
 const CONFIG_DEFAULT = {
-  whatsapp_numero:      '5493512476048',
-  whatsapp_numero_2:    '5493512217870',
-  nombre_contacto_1:    'Belu',
-  nombre_contacto_2:    'Flor',
+  whatsapp_numero:      '5493512217870',
+  whatsapp_numero_2:    '',
+  nombre_contacto_1:    'Flor',
+  nombre_contacto_2:    '',
   instagram_url:        '',
-  instagram_usuario:    '@midulce_tentacion7',
+  instagram_usuario:    '@flore.pasteleria',
   instagram_destacados: [] as string[],
   valor_hora_trabajo:   500,
   costo_fijo_por_hora:  100,
@@ -343,20 +343,19 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Cards de contacto — 1 col mobile, 2 col sm+ */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
+          {/* Card de contacto */}
+          <div className="max-w-sm mx-auto w-full">
             <a
-              href={`https://wa.me/${config.whatsapp_numero ?? '5493512476048'}`}
+              href={`https://wa.me/${config.whatsapp_numero}`}
               target="_blank" rel="noopener noreferrer"
               className="group flex items-center gap-4 bg-white rounded-3xl border border-stone-100 shadow-[0_4px_20px_rgb(0,0,0,0.06)] p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgb(0,0,0,0.10)] hover:border-rose-100/70"
             >
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center text-white font-black text-lg shadow-[0_4px_12px_rgba(244,63,94,0.28)] shrink-0">
-                {(config.nombre_contacto_1 ?? 'B').charAt(0).toUpperCase()}
+                {(config.nombre_contacto_1 ?? 'F').charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-stone-800 text-sm leading-tight">
-                  {config.nombre_contacto_1 ?? 'Belu'}
+                  {config.nombre_contacto_1 ?? 'Flor'}
                 </p>
                 <p className="text-xs text-stone-400 mt-0.5">Escribir por WhatsApp →</p>
               </div>
@@ -364,27 +363,6 @@ export default function LandingPage() {
                 <WhatsAppIcon size={16} />
               </div>
             </a>
-
-            {config.whatsapp_numero_2 && (
-              <a
-                href={`https://wa.me/${config.whatsapp_numero_2}`}
-                target="_blank" rel="noopener noreferrer"
-                className="group flex items-center gap-4 bg-white rounded-3xl border border-stone-100 shadow-[0_4px_20px_rgb(0,0,0,0.06)] p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgb(0,0,0,0.10)] hover:border-rose-100/70"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-black text-lg shadow-[0_4px_12px_rgba(244,63,94,0.28)] shrink-0">
-                  {(config.nombre_contacto_2 ?? 'F').charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-stone-800 text-sm leading-tight">
-                    {config.nombre_contacto_2 ?? 'Flor'}
-                  </p>
-                  <p className="text-xs text-stone-400 mt-0.5">Escribir por WhatsApp →</p>
-                </div>
-                <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center text-green-500 shrink-0 group-hover:bg-green-500 group-hover:text-white transition-all duration-200 shadow-sm">
-                  <WhatsAppIcon size={16} />
-                </div>
-              </a>
-            )}
           </div>
 
           {/* Trust signals */}
@@ -420,7 +398,7 @@ export default function LandingPage() {
 
               <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Seguinos en</p>
               <h2 className="text-xl font-extrabold text-stone-800 tracking-tight mb-1">
-                {config.instagram_usuario ?? '@midulce_tentacion7'}
+                {config.instagram_usuario ?? '@flore.pasteleria'}
               </h2>
               <p className="text-sm text-stone-500 mb-5">
                 Dulces, flyers y novedades todos los días 🍰✨
@@ -515,20 +493,11 @@ export default function LandingPage() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3 justify-center lg:justify-start">
                   <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center text-white font-black text-xs shrink-0 shadow-[0_2px_8px_rgba(244,63,94,0.3)]">
-                    {(config.nombre_contacto_1 ?? 'B').charAt(0).toUpperCase()}
+                    {(config.nombre_contacto_1 ?? 'F').charAt(0).toUpperCase()}
                   </div>
                   <div className="text-left">
-                    <p className="text-xs font-bold text-white/70 leading-none">{config.nombre_contacto_1 ?? 'Belu'}</p>
+                    <p className="text-xs font-bold text-white/70 leading-none">{config.nombre_contacto_1 ?? 'Flor'}</p>
                     <p className="text-xs text-stone-500 mt-0.5">{fmtPhone(config.whatsapp_numero)}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 justify-center lg:justify-start">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-black text-xs shrink-0 shadow-[0_2px_8px_rgba(244,63,94,0.3)]">
-                    {(config.nombre_contacto_2 ?? 'F').charAt(0).toUpperCase()}
-                  </div>
-                  <div className="text-left">
-                    <p className="text-xs font-bold text-white/70 leading-none">{config.nombre_contacto_2 ?? 'Flor'}</p>
-                    <p className="text-xs text-stone-500 mt-0.5">{fmtPhone(config.whatsapp_numero_2)}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 justify-center lg:justify-start pt-1">

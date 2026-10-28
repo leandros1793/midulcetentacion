@@ -178,14 +178,14 @@ export default function ConfiguracionPage() {
 
         <div>
           <label className="label">Usuario de Instagram</label>
-          <input type="text" className="input" placeholder="@midulce_tentacion7"
+          <input type="text" className="input" placeholder="@flore.pasteleria"
             value={config.instagram_usuario ?? ''}
             onChange={e => setConfig(c => ({ ...c, instagram_usuario: e.target.value }))} />
         </div>
 
         <div>
           <label className="label">URL del perfil</label>
-          <input type="url" className="input" placeholder="https://www.instagram.com/midulce_tentacion7/"
+          <input type="url" className="input" placeholder="https://www.instagram.com/flore.pasteleria/"
             value={config.instagram_url ?? ''}
             onChange={e => setConfig(c => ({ ...c, instagram_url: e.target.value }))} />
           {config.instagram_url && (
@@ -239,7 +239,7 @@ export default function ConfiguracionPage() {
       </button>
 
       <div className="text-center text-xs text-stone-300 pt-2">
-        Mi Dulce Tentación · Sistema de costos v1.0
+        Floré · Sistema de costos v1.0
       </div>
     </div>
   );

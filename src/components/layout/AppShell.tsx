@@ -145,7 +145,7 @@ export default function AppShell() {
   const current =
     NAV.find(n => location.pathname.startsWith(n.to) && n.to !== '/dashboard')?.label
     ?? EXTRA_TITLES[location.pathname]
-    ?? (location.pathname === '/dashboard' ? 'Inicio' : 'Mi Dulce Tentacion');
+    ?? (location.pathname === '/dashboard' ? 'Inicio' : 'Floré');
 
   const handleLogout = async () => {
     await signOut();
@@ -177,7 +177,7 @@ export default function AppShell() {
               backgroundClip: 'text',
             }}
           >
-            Mi Dulce Tentacion
+            Floré
           </p>
           <h1 className="text-sm font-bold text-stone-800 tracking-tight truncate">{current}</h1>
         </div>

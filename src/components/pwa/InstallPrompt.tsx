@@ -61,7 +61,7 @@ export default function InstallPrompt() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-bold text-stone-800 text-sm leading-tight">
-            Instalar Mi Dulce Tentación
+            Instalar Floré
           </p>
           {showIos ? (
             <p className="text-[11px] text-stone-500 mt-0.5 leading-relaxed">

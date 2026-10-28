@@ -68,7 +68,7 @@ export default function LoginPage() {
                 <input
                   type="email" autoComplete="email" required
                   className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-2xl text-sm text-stone-800 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
-                  placeholder="hola@midulcetentacion.com"
+                  placeholder="hola@flore.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                 />
